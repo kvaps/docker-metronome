@@ -99,7 +99,17 @@ configure_prosody()
     if [ ! -d /etc/dirsrv/slapd-* ] ; then 
         echo "info:  start configuring Prosody"
 
+         #MySQL setup
+        /usr/bin/mysql_secure_installation << EOF
 
+y
+$prosody_MySQL_root_password
+$prosody_MySQL_root_password
+y
+y
+y
+y
+EOF
 
         echo "info:  finished configuring Prosody"
     else
@@ -259,7 +269,7 @@ setup_wizard ()
 
 run ()
 {
-     if [ -d /data/etc/dirsrv/slapd-* ] ; then
+     if [ -d /var/lib/mysql/mysql ] ; then
      
          echo "info:  Prosody installation detected on /data volume, run relinkink..."
          link_dirs

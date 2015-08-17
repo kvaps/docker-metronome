@@ -10,7 +10,7 @@ RUN yum -y update
 RUN yum -y install epel-release 
 
 # Install prosody
-RUN yum -y install prosody
+RUN yum -y install prosody mysql-server
 
 # Install additional soft
 RUN yum -y install supervisor fail2ban dhclient
