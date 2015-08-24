@@ -35,6 +35,9 @@ prosody_max_files_hard = 200000
 -- This is the list of modules Prosody will load on startup.
 -- It looks for mod_modulename.lua in the plugins folder, so make sure that exists too.
 -- Documentation on modules can be found at: http://prosody.im/doc/modules
+
+plugin_paths = { "/usr/lib64/prosody/modules", "/usr/lib64/prosody/modules2" }
+
 modules_enabled = {
 
     -- Generally required

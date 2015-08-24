@@ -13,12 +13,14 @@ RUN yum -y install epel-release
 RUN yum -y install prosody mysql-server
 
 # Install additional soft
-RUN yum -y install supervisor fail2ban dhclient lua-ldap
+RUN yum -y install supervisor fail2ban dhclient lua-ldap mercurial
 
 # MySQL LDAP IMAP
 VOLUME ["/data"]
 
 WORKDIR /root
+
+RUN hg clone https://code.google.com/p/prosody-modules/ /usr/lib64/prosody/modules2
 
 # Add config and setup script, run it
 ADD wrappers/* /bin/
