@@ -100,6 +100,8 @@ configure_prosody()
         echo "info:  start configuring Prosody"
 
          #MySQL setup
+         service mysqld start
+
         /usr/bin/mysql_secure_installation << EOF
 
 y
@@ -109,6 +111,13 @@ y
 y
 y
 y
+EOF
+
+        mysql -uroot -p$prosody_MySQL_root_password << EOF
+CREATE DATABASE prosody;
+USE prosody;
+GRANT ALL PRIVILEGES ON prosody TO prosody@localhost IDENTIFIED BY '$prosody_MySQL_prosody_password' WITH GRANT OPTION;
+FLUSH PRIVILEGES;
 EOF
 
         echo "info:  finished configuring Prosody"
