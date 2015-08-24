@@ -13,7 +13,7 @@ RUN yum -y install epel-release
 RUN yum -y install prosody mysql-server
 
 # Install additional soft
-RUN yum -y install supervisor fail2ban dhclient
+RUN yum -y install supervisor fail2ban dhclient lua-ldap
 
 # MySQL LDAP IMAP
 VOLUME ["/data"]

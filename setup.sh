@@ -125,6 +125,21 @@ EOF
         echo "warn: Prosody already configured, skipping..."
     fi
 
+    domain_dn=`echo $(hostname -d) | sed 's/^/dc=/g' | sed 's/[\.]/,dc=/g'`
+    sed -r -i \
+        -e "s/example\.org/$(hostname -d)/g" \
+        -e "s/dc=[^\']*/$domain_dn/g" \
+        -e '/bind_password = /c\        bind_password = '\'$kolab_Directory_Manager_password\'"," \
+        -e '/ hostname *=/c\       hostname       = '\'$kolab_hostname\'',' \
+        /etc/prosody/prosody.cfg.lua
+
+    sed -r -i \
+        -e "s/dc=[^\"]*/$domain_dn/g" /etc/prosody/kolabgr.lua \
+        -e '/passwd = /c\    passwd = "'$kolab_Directory_Manager_password'",' \
+        -e '/ldapserver = /c\    ldapserver = "'$kolab_hostname'",' \
+        /etc/prosody/kolabgr.lua
+
+
 }
 
 configure_ssl()

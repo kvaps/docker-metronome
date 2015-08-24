@@ -230,7 +230,7 @@ VirtualHost "example.org"
     groups_file = "/etc/prosody/groups.txt"
 
     ldap = {
-        hostname      = 'kolab-example.org',                    -- LDAP server location
+        hostname      = 'kolab',                    -- LDAP server location
         bind_dn       = 'cn=Directory Manager', -- Bind DN for LDAP authentication (optional if anonymous bind is supported)
         bind_password = 'password',                      -- Bind password (optional if anonymous bind is supported)
     
