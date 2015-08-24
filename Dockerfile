@@ -22,6 +22,9 @@ WORKDIR /root
 
 # Add config and setup script, run it
 ADD wrappers/* /bin/
+ADD prosody.cfg.lua /etc/prosody/prosody.cfg.lua
+ADD kolabgr.lua /etc/prosody/kolabgr.lua
+ADD groups.txt /etc/prosody/groups.txt
 ADD settings.ini /etc/settings.ini
 ADD setup.sh /bin/setup.sh
 ENTRYPOINT ["/bin/setup.sh", "run"]
