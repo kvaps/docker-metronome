@@ -18,10 +18,6 @@ RUN yum -y install supervisor fail2ban dhclient lua-ldap mercurial
 # MySQL LDAP IMAP
 VOLUME ["/data"]
 
-WORKDIR /root
-
-RUN hg clone https://code.google.com/p/prosody-modules/ /usr/lib64/prosody/modules2
-
 # Add config and setup script, run it
 ADD wrappers/* /bin/
 ADD prosody.cfg.lua /etc/prosody/prosody.cfg.lua
@@ -33,3 +29,25 @@ ENTRYPOINT ["/bin/setup.sh", "run"]
  
 # Ports: c2s s2s bosh
 #EXPOSE  5222, 5269, 5280
+
+RUN yum -y install gcc lua-devel openssl-devel libidn-devel
+RUN hg clone http://hg.prosody.im/0.10 /usr/src/prosody
+RUN hg clone http://hg.prosody.im/prosody-modules/ /usr/src/prosody-modules
+
+WORKDIR /usr/src/prosody
+
+RUN ./configure --prefix=
+RUN make
+RUN make install
+RUN useradd -r -s /sbin/nologin -m -d /var/lib/prosody prosody
+
+WORKDIR /usr/src/prosody-modules
+
+WORKDIR /root
+
+
+
+#RUN yum -y install git
+
+#RUN git clone https://github.com/bjc/prosody 
+

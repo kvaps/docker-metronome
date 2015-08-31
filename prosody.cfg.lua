@@ -36,7 +36,7 @@ prosody_max_files_hard = 200000
 -- It looks for mod_modulename.lua in the plugins folder, so make sure that exists too.
 -- Documentation on modules can be found at: http://prosody.im/doc/modules
 
-plugin_paths = { "/usr/lib64/prosody/modules", "/usr/lib64/prosody/modules2" }
+plugin_paths = { "/usr/lib64/prosody/modules", "/usr/src/prosody-modules" }
 
 modules_enabled = {
 
