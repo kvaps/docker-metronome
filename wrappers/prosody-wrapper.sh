@@ -1,6 +1,5 @@
 #!/bin/bash
-d=prosody
 l=/var/log/prosody/prosody.log
-trap '{ service $d stop; exit 0; }' EXIT 
-service $d start 
+trap '{ prosodyctl stop; exit 0; }' EXIT 
+prosodyctl start 
 tail -f -n1 $l
