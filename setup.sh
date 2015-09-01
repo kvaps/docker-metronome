@@ -265,7 +265,7 @@ print_passwords()
     echo "======================================================="
     echo "Please save your passwords:                            "
     echo "======================================================="
-    cat /etc/settings.ini | grep password
+    cat /etc/settings.ini | grep password | grep -v Directory_Manager
     echo
     echo "            (You can also see it in /etc/settings.ini)"
     echo "_______________________________________________________"
@@ -311,7 +311,7 @@ run ()
 if [ -f /data/etc/settings.ini ]; then get_config /data/etc/settings.ini; fi
 
 case "$1" in
-    "run")      run; print_passwords ;;
+    "run")      run ;;
     "prosody")  configure_prosody ;;
     "ssl")      configure_ssl ;;
     "fail2ban") configure_fail2ban ;;
