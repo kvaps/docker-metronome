@@ -316,12 +316,12 @@ run ()
 }
 
 get_config /data/etc/settings.ini
-# Run
-if [ "$1" == "run" ] ; then run
-# Main
-elif [ "$1" == "prosody" ] ; then configure_prosody ; print_passwords
-elif [ "$1" == "ssl" ] ; then configure_ssl
-elif [ "$1" == "fail2ban" ] ; then configure_fail2ban
-# Print parameters
-elif [ "$1" == "prosody" ] ; then print_passwords
-else usage ; fi
+
+case "$1" in
+    "run")      run; print_passwords ;;
+    "prosody")  configure_prosody ;;
+    "ssl")      configure_ssl ;;
+    "fail2ban") configure_fail2ban ;;
+    "link")     link_dirs ;;
+    *)          usage ;;
+esac
