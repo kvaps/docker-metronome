@@ -60,5 +60,9 @@ WORKDIR /root
 
 VOLUME ["/data"]
 
-# Ports: c2s s2s bosh
-#EXPOSE  5222, 5269, 5280
+# 5000/tcp: mod_proxy65
+# 5222/tcp: client to server
+# 5269/tcp: server to server 
+# 5280/tcp: BOSH
+# 5281/tcp: Secure BOSH
+EXPOSE 5000 5222 5269 5280 5281
