@@ -41,6 +41,7 @@ dir=(
     /etc/fail2ban
     /etc/my.cnf
     /etc/prosody
+    /etc/supervisord.conf
     /var/lib/prosody
     /var/log/prosody
     /etc/ssl
@@ -85,6 +86,8 @@ nodaemon=true
 
 [program:prosody]
 command=/bin/prosody-wrapper.sh 
+[program:kolabgr]
+command=/bin/kolabgr-wrapper.sh
 [program:mysqld]
 command=/bin/mysqld-wrapper.sh 
 ;[program:fail2ban]
