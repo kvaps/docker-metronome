@@ -150,8 +150,8 @@ ignore_presence_priority = true
 -- These are the SSL/TLS-related settings. If you don't want
 -- to use SSL/TLS, you may comment or remove this
 ssl = {
-	key = "/etc/ssl/startssl/key/jabber.example.org.key";
-  	certificate = "/etc/ssl/startssl/crt/jabber.example.org_prosody.pem";
+	key = "/etc/prosody/certs/localhost.key";
+  	certificate = "/etc/prosody/certs/localhost.crt";
     protocol = "sslv23";
     ciphers = "ALL"; 
 }

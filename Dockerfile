@@ -10,7 +10,7 @@ RUN yum -y update
 RUN yum -y install epel-release 
 
 # Install prosody
-RUN yum -y install prosody mysql-server
+RUN yum -y install mysql-server
 
 # Install additional soft
 RUN yum -y install supervisor fail2ban dhclient lua-ldap mercurial
@@ -39,11 +39,25 @@ WORKDIR /usr/src/prosody
 RUN ./configure --prefix=
 RUN make
 RUN make install
-RUN useradd -r -s /sbin/nologin -m -d /var/lib/prosody prosody
 
-WORKDIR /usr/src/prosody-modules
+RUN useradd -r -s /sbin/nologin -d /var/lib/prosody prosody
+RUN chown prosody:prosody /var/lib/prosody/
+RUN mkdir /var/log/prosody
+RUN chown prosody:prosody /var/log/prosody/
+
+# lua-zlib
+
+RUN yum -y install tar
+RUN curl https://codeload.github.com/brimworks/lua-zlib/tar.gz/v0.4 | tar xzv -C /usr/src/
+WORKDIR /usr/src/lua-zlib-0.4/
+ENV LUACPATH="/usr/lib64/lua/5.1"
+ENV LIBDIR="-L/usr/lib64"
+RUN make linux
+RUN make install
 
 WORKDIR /root
+
+RUN yum -y install lua-expat lua-socket lua-filesystem lua-sec
 
 
 
