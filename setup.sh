@@ -203,31 +203,18 @@ EOF
         cat /etc/pki/tls/certs/$(hostname -f).crt /etc/pki/tls/certs/$(hostname -f)-ca.pem > /etc/pki/tls/certs/$(hostname -f).bundle.pem
         cat /etc/pki/tls/certs/$(hostname -f)-ca.pem > /etc/pki/tls/certs/$(hostname -f).ca-chain.pem
         # Set access rights
-        chown -R root:mail /etc/pki/tls/private
+        chown -R root:prosody /etc/pki/tls/private
         chmod 600 /etc/pki/tls/private/$(hostname -f).key
         chmod 750 /etc/pki/tls/private
         chmod 640 /etc/pki/tls/private/*
         # Add CA to system’s CA bundle
         cat /etc/pki/tls/certs/$(hostname -f)-ca.pem >> /etc/pki/tls/certs/ca-bundle.crt
 
-
-
-
-
-
-        # Configuration nginx for SSL
-        sed -i -e '/ssl_certificate/c\    ssl_certificate /etc/pki/tls/certs/'$(hostname -f)'.crt;' /etc/nginx/conf.d/default.conf
-        sed -i -e '/ssl_certificate_key/c\    ssl_certificate_key /etc/pki/tls/private/'$(hostname -f)'.key;' /etc/nginx/conf.d/default.conf
-        if [ "$(grep -c "ssl_trusted_certificate" /etc/nginx/conf.d/default.conf)" == "0" ] ; then
-             sed -i -e '/ssl_certificate_key/a\    ssl_trusted_certificate /etc/pki/tls/certs/'$(hostname -f)'.ca-chain.pem;' /etc/nginx/conf.d/default.conf
-        else 
-             sed -i -e '/ssl_trusted_certificate/c\    ssl_trusted_certificate /etc/pki/tls/certs/'$(hostname -f)'.ca-chain.pem;' /etc/nginx/conf.d/default.conf
-        fi
-
-
-
-
-
+        # Configuration prosody for SSL
+        sed -r -i \
+            -e '/certificate =/c\    certificate = "/etc/pki/tls/certs/'$(hostname -f)'.bundle.pem";' \
+            -e '/key =/c\    key = "/etc/pki/tls/private/'$(hostname -f)'.key";' \
+            /etc/prosody/prosody.cfg.lua
 
     else 
         echo "error: input of certifacte or private key or ca-sertificate is blank, skipping..."
@@ -294,7 +281,7 @@ setup_wizard ()
 
 run ()
 {
-     if [ -d /var/lib/mysql/mysql ] ; then
+     if [ -d /data/var/lib/mysql/mysql ] ; then
      
          echo "info:  Prosody installation detected on /data volume, run relinkink..."
          link_dirs

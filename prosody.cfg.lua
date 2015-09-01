@@ -240,7 +240,7 @@ VirtualHost "example.org"
         user = {
           basedn        = 'ou=People,dc=example,dc=org',                  -- The base DN where user records can be found
           filter        = '(objectClass=mailrecipient)', -- Filter expression to find user records under basedn
-          usernamefield = 'mail',                                         -- The field that contains the user's ID (this will be the username portion of the JID)
+          usernamefield = 'uid',                                         -- The field that contains the user's ID (this will be the username portion of the JID)
           namefield     = 'cn',                                          -- The field that contains the user's full name (this will be the alias found in the roster)
         },
     
