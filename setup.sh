@@ -84,6 +84,8 @@ configure_supervisor()
 [supervisord]
 nodaemon=true
 
+[program:rsyslog]
+command=/bin/rsyslog-wrapper.sh 
 [program:prosody]
 command=/bin/prosody-wrapper.sh 
 [program:kolabgr]
@@ -306,7 +308,7 @@ run ()
      fi
 }
 
-get_config /data/etc/settings.ini
+if [ -f /data/etc/settings.ini ]; then get_config /data/etc/settings.ini; fi
 
 case "$1" in
     "run")      run; print_passwords ;;

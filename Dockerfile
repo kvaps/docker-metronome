@@ -10,7 +10,7 @@ RUN yum -y update
 RUN yum -y install epel-release 
 
 # Install additional soft
-RUN yum -y install mysql-server supervisor fail2ban dhclient lua-ldap mercurial tar
+RUN yum -y install mysql-server supervisor fail2ban dhclient lua-ldap mercurial tar rsyslog dhclient
 
 # Install build-essentials and lua-modules
 RUN yum -y install gcc lua-devel openssl-devel libidn-devel lua-expat lua-socket lua-filesystem lua-sec lua-dbi
