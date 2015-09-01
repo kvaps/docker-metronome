@@ -46,7 +46,6 @@ RUN mkdir /var/log/prosody
 RUN chown prosody:prosody /var/log/prosody/
 
 # lua-zlib
-
 RUN yum -y install tar
 RUN curl https://codeload.github.com/brimworks/lua-zlib/tar.gz/v0.4 | tar xzv -C /usr/src/
 WORKDIR /usr/src/lua-zlib-0.4/
@@ -59,7 +58,19 @@ WORKDIR /root
 
 RUN yum -y install lua-expat lua-socket lua-filesystem lua-sec
 
+RUN mkdir /var/run/prosody/
+RUN chown prosody: /var/run/prosody/
 
+RUN yum -y install lua-dbi
+
+# lua-bitop
+RUN curl http://bitop.luajit.org/download/LuaBitOp-1.0.2.tar.gz | tar xzv -C /usr/src/
+WORKDIR /usr/src/LuaBitOp-1.0.2
+RUN make
+RUN make install
+
+
+RUN ln -s /usr/src/prosody-modules/mod_lib_ldap/ldap.lib.lua /lib/prosody/modules/ldap.lib.lua
 
 #RUN yum -y install git
 
