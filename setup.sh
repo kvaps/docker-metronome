@@ -131,6 +131,7 @@ EOF
         -e "s/dc=[^\']*/$domain_dn/g" \
         -e '/bind_password = /c\        bind_password = '\'$kolab_Directory_Manager_password\'"," \
         -e '/ hostname *=/c\       hostname       = '\'$kolab_hostname\'',' \
+        -e '/^sql/ s/password = "[^"]*"/password= "'$prosody_MySQL_prosody_password'"/' \
         /etc/prosody/prosody.cfg.lua
 
     sed -r -i \
