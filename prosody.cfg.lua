@@ -332,8 +332,8 @@ Component "vjud.example.org" "vjud"
     ud_disco_name = "Jappix User Directory"
     synchronize_to_host_vcards = "example.org"
 
----Set up a BOSH service
-Component "mail.example.org" "http"
+---Set up a BOSH service ( https://bind.example.org:5281/http-bind )
+Component "bind.example.org" "http"
     modules_enabled = { "bosh" }
 
 ---Set up a WebSocket service
