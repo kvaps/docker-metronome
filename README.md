@@ -11,7 +11,7 @@ Run
 docker run \
     --name prosody \
     -h xmpp.example.org \
-    --link=kolab
+    --link=kolab \
     -v /opt/prosody:/data:rw \
     -p 5000:5000 \
     -p 5222:5222 \
@@ -83,13 +83,14 @@ Requires=docker.service
 EnvironmentFile=/etc/prosody-docker/%i
 Restart=always
 
+ExecStartPre=/bin/bash -c 'docker rm -f ${DOCKER_NAME}'
 ExecStart=/bin/bash -c '/usr/bin/docker run --name ${DOCKER_NAME} -h ${DOCKER_HOSTNAME} -v ${DOCKER_VOLUME}:/data:rw ${DOCKER_OPTIONS} kvaps/prosody'
 ExecStartPost=/bin/bash -c ' \
         pipework ${EXT_INTERFACE} -i eth1 ${DOCKER_NAME} ${EXT_ADDRESS}@${EXT_GATEWAY}; \
         docker exec ${DOCKER_NAME} bash -c "${INT_ROUTE}"; \
         docker exec ${DOCKER_NAME} bash -c "if ! [ \"${DNS_SERVER}\" = \"\" ] ; then echo nameserver ${DNS_SERVER} > /etc/resolv.conf ; fi" '
 
-ExecStop=/bin/bash -c 'docker stop -t 2 ${DOCKER_NAME} && docker rm -f ${DOCKER_NAME}'
+ExecStop=/bin/bash -c 'docker stop -t 2 ${DOCKER_NAME}'
 
 [Install]
 WantedBy=multi-user.target
