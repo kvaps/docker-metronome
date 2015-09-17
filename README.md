@@ -18,6 +18,7 @@ docker run \
     -p 5269:5269 \
     -p 5280:5280 \
     -p 5281:5281 \
+    --env TZ=Europe/Moscow \
     --cap-add=NET_ADMIN \
     -ti \
     kvaps/prosody
@@ -83,14 +84,13 @@ Requires=docker.service
 EnvironmentFile=/etc/prosody-docker/%i
 Restart=always
 
-ExecStartPre=/bin/bash -c 'docker rm -f ${DOCKER_NAME}'
 ExecStart=/bin/bash -c '/usr/bin/docker run --name ${DOCKER_NAME} -h ${DOCKER_HOSTNAME} -v ${DOCKER_VOLUME}:/data:rw ${DOCKER_OPTIONS} kvaps/prosody'
 ExecStartPost=/bin/bash -c ' \
         pipework ${EXT_INTERFACE} -i eth1 ${DOCKER_NAME} ${EXT_ADDRESS}@${EXT_GATEWAY}; \
         docker exec ${DOCKER_NAME} bash -c "${INT_ROUTE}"; \
         docker exec ${DOCKER_NAME} bash -c "if ! [ \"${DNS_SERVER}\" = \"\" ] ; then echo nameserver ${DNS_SERVER} > /etc/resolv.conf ; fi" '
 
-ExecStop=/bin/bash -c 'docker stop -t 2 ${DOCKER_NAME}'
+ExecStop=/bin/bash -c 'docker stop -t 2 ${DOCKER_NAME} ; docker rm -f ${DOCKER_NAME}'
 
 [Install]
 WantedBy=multi-user.target
@@ -104,7 +104,7 @@ vi /etc/prosody-docker/example.org
 DOCKER_HOSTNAME=xmpp.example.org
 DOCKER_NAME="prosody-$(echo $DOCKER_HOSTNAME | cut -d. -f 2-)"
 DOCKER_VOLUME="/opt/prosody-$(echo $DOCKER_HOSTNAME | cut -d. -f 2-)"
-DOCKER_OPTIONS='--cap-add=NET_ADMIN --link kolab-$(echo $DOCKER_HOSTNAME | cut -d. -f 2-) -p 5280:5280 -p 5281:5281'
+DOCKER_OPTIONS='--env TZ=Europe/Moscow --cap-add=NET_ADMIN --link kolab-$(echo $DOCKER_HOSTNAME | cut -d. -f 2-) -p 5280:5280 -p 5281:5281'
  
 EXT_INTERFACE=eth2
 #EXT_ADDRESS='dhclient D2:84:9D:CA:F3:BC'
