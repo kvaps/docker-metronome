@@ -1,18 +1,18 @@
-Prosody 0.10 Jabber/XMPP server in a Docker container
+Metronome 0.10 Jabber/XMPP server in a Docker container
 =====================================================
 
-This is Prosody 0.10 Jabber/XMPP server, configured to use with Kolab Groupware in a docker.
-Installation is supports automatic configuration **prosody**, **ssl**, and **fail2ban** and communicate with **Kolab** using ldap.
+This is Metronome 0.10 Jabber/XMPP server, configured to use with Kolab Groupware in a docker.
+Installation is supports automatic configuration **metronome**, **ssl**, and **fail2ban** and communicate with **Kolab** using ldap.
 
 Run
 ---
 
 ```bash
 docker run \
-    --name prosody \
+    --name metronome \
     -h xmpp.example.org \
     --link=kolab \
-    -v /opt/prosody:/data:rw \
+    -v /opt/metronome:/data:rw \
     -p 5000:5000 \
     -p 5222:5222 \
     -p 5269:5269 \
@@ -21,15 +21,15 @@ docker run \
     --env TZ=Europe/Moscow \
     --cap-add=NET_ADMIN \
     -ti \
-    kvaps/prosody
+    kvaps/metronome
 ```
 It should be noted that the `--cap-add=NET_ADMIN` option is necessary only for **Fail2ban**, if you do not plan to use **Fail2ban**, you can exclude it.
 
-You can also more integrate prosody to your system, simply replace `-v` options like this:
+You can also more integrate metronome to your system, simply replace `-v` options like this:
 ```bash
-    -v /etc/prosody:/data/etc:rw \
-    -v /var/lib/prosody:/data/var/lib:rw \
-    -v /var/log/prosody:/data/var/log:rw \
+    -v /etc/metronome:/data/etc:rw \
+    -v /var/lib/metronome:/data/var/lib:rw \
+    -v /var/log/metronome:/data/var/log:rw \
 ```
 
 If it is the first run, you will see the settings page, make your changes and save it, installation will continue...
@@ -41,19 +41,19 @@ Systemd unit
 You can create a unit for systemd, which would run it as a service and use when startup
 
 ```bash
-vi /etc/systemd/system/prosody.service
+vi /etc/systemd/system/metronome.service
 ```
 
 ```ini
 [Unit]
-Description=Prosody Jabber/XMPP Server
+Description=Metronome Jabber/XMPP Server
 After=docker.service
 Requires=docker.service
 
 [Service]
 Restart=always
-ExecStart=/usr/bin/docker start -a prosody
-ExecStop=/usr/bin/docker stop prosody
+ExecStart=/usr/bin/docker start -a metronome
+ExecStop=/usr/bin/docker stop metronome
 
 [Install]
 WantedBy=multi-user.target
@@ -61,8 +61,8 @@ WantedBy=multi-user.target
 
 Now you can activate and start the container:
 ```bash
-systemctl enable prosody
-systemctl start prosody
+systemctl enable metronome
+systemctl start metronome
 ```
 
 Multi-instances
@@ -72,19 +72,19 @@ I use [pipework](https://github.com/jpetazzo/pipework) script for passthrough ex
 
 I write such systemd-unit:
 ```bash
-vi /etc/systemd/system/prosody@.service
+vi /etc/systemd/system/metronome@.service
 ```
 ```ini
 [Unit]
-Description=Prosody Jabber/XMPP Server for %I
+Description=Metronome Jabber/XMPP Server for %I
 After=docker.service
 Requires=docker.service
 
 [Service]
-EnvironmentFile=/etc/prosody-docker/%i
+EnvironmentFile=/etc/metronome-docker/%i
 Restart=always
 
-ExecStart=/bin/bash -c '/usr/bin/docker run --name ${DOCKER_NAME} -h ${DOCKER_HOSTNAME} -v ${DOCKER_VOLUME}:/data:rw ${DOCKER_OPTIONS} kvaps/prosody'
+ExecStart=/bin/bash -c '/usr/bin/docker run --name ${DOCKER_NAME} -h ${DOCKER_HOSTNAME} -v ${DOCKER_VOLUME}:/data:rw ${DOCKER_OPTIONS} kvaps/metronome'
 ExecStartPost=/bin/bash -c ' \
         pipework ${EXT_INTERFACE} -i eth1 ${DOCKER_NAME} ${EXT_ADDRESS}@${EXT_GATEWAY}; \
         docker exec ${DOCKER_NAME} bash -c "${INT_ROUTE}"; \
@@ -98,12 +98,12 @@ WantedBy=multi-user.target
 
 And this config for each instance:
 ```bash
-vi /etc/prosody-docker/example.org
+vi /etc/metronome-docker/example.org
 ```
 ```bash
 DOCKER_HOSTNAME=xmpp.example.org
-DOCKER_NAME="prosody-$(echo $DOCKER_HOSTNAME | cut -d. -f 2-)"
-DOCKER_VOLUME="/opt/prosody-$(echo $DOCKER_HOSTNAME | cut -d. -f 2-)"
+DOCKER_NAME="metronome-$(echo $DOCKER_HOSTNAME | cut -d. -f 2-)"
+DOCKER_VOLUME="/opt/metronome-$(echo $DOCKER_HOSTNAME | cut -d. -f 2-)"
 DOCKER_OPTIONS='--env TZ=Europe/Moscow --cap-add=NET_ADMIN --link kolab-$(echo $DOCKER_HOSTNAME | cut -d. -f 2-) -p 5280:5280 -p 5281:5281'
  
 EXT_INTERFACE=eth2
@@ -116,6 +116,6 @@ INT_ROUTE='ip route add 192.168.1.0/24 via 172.17.42.1 dev eth0'
 ```
 Just simple use:
 ```bash
-systemctl enable prosody@example.org
-systemctl start prosody@example.org
+systemctl enable metronome@example.org
+systemctl start metronome@example.org
 ```

@@ -26,28 +26,34 @@ WORKDIR /usr/src/LuaBitOp-1.0.2
 RUN make
 RUN make install
 
-#Install Prosody 0.10
-RUN hg clone http://hg.prosody.im/0.10 /usr/src/prosody
-WORKDIR /usr/src/prosody
+RUN yum -y install git 
+
+#Install Metronome
+RUN git clone https://github.com/maranda/metronome.git /usr/src/metronome
+WORKDIR /usr/src/metronome
 RUN ./configure --prefix=
 RUN make
 RUN make install
-RUN useradd -r -s /sbin/nologin -d /var/lib/prosody prosody
-RUN mkdir /var/log/prosody/
-RUN mkdir /var/run/prosody/
-RUN chown prosody:prosody /var/lib/prosody/
-RUN chown prosody:prosody /var/log/prosody/
-RUN chown prosody: /var/run/prosody/
+RUN useradd -r -s /sbin/nologin -d /var/lib/metronome metronome
+RUN mkdir /var/log/metronome/
+RUN mkdir /var/run/metronome/
+RUN chown metronome:metronome /var/lib/metronome/
+RUN chown metronome:metronome /var/log/metronome/
+RUN chown metronome:metronome /var/run/metronome/
 
 #Install Prosody-modules
 RUN hg clone http://hg.prosody.im/prosody-modules/ /usr/src/prosody-modules
-RUN ln -s /usr/src/prosody-modules/mod_lib_ldap/ldap.lib.lua /lib/prosody/modules/ldap.lib.lua
+RUN cp -r /usr/src/prosody-modules /usr/src/metronome-modules
+RUN find /usr/src/metronome-modules -type f -print0 | xargs -0 sed -i 's/prosody/metronome/g'
+RUN ln -s /usr/src/metronome-modules/mod_lib_ldap/ldap.lib.lua /lib/metronome/modules/ldap.lib.lua
+
+RUN yum -y install lua-event
 
 # Add config and setup script, run it
 ADD wrappers/* /bin/
-ADD prosody.cfg.lua /etc/prosody/prosody.cfg.lua
-ADD kolabgr.lua /etc/prosody/kolabgr.lua
-ADD groups.txt /etc/prosody/groups.txt
+ADD metronome.cfg.lua /etc/metronome/metronome.cfg.lua
+ADD kolabgr.lua /etc/metronome/kolabgr.lua
+ADD groups.txt /etc/metronome/groups.txt
 ADD settings.ini /etc/settings.ini
 ADD setup.sh /bin/setup.sh
 ENTRYPOINT ["/bin/setup.sh", "run"]

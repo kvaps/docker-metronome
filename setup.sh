@@ -7,7 +7,7 @@ usage ()
      echo "Arguments:"
      echo "    run                   - Auto start all services or install wizard in case of initial setup"
      echo "    link                  - Create symlinks default folders to /data"
-     echo "    prosody               - Configure prosody from config"
+     echo "    metronome               - Configure metronome from config"
      echo "    ssl                   - Configure SSL using your certs"
      echo "    fail2ban              - Configure Fail2ban"
      echo
@@ -47,10 +47,10 @@ dir=(
     /etc/settings.ini
     /etc/fail2ban
     /etc/my.cnf
-    /etc/prosody
+    /etc/metronome
     /etc/supervisord.conf
-    /var/lib/prosody
-    /var/log/prosody
+    /var/lib/metronome
+    /var/log/metronome
     /etc/ssl
     /etc/pki
     /var/lib/mysql
@@ -93,8 +93,8 @@ nodaemon=true
 
 [program:rsyslog]
 command=/bin/rsyslog-wrapper.sh 
-[program:prosody]
-command=/bin/prosody-wrapper.sh 
+[program:metronome]
+command=/bin/metronome-wrapper.sh 
 [program:kolabgr]
 command=/bin/kolabgr-wrapper.sh
 [program:mysqld]
@@ -106,7 +106,7 @@ EOF
     echo "info:  finished configuring Supervisor"
 }
 
-configure_prosody()
+configure_metronome()
 {
     if [ ! -d /etc/dirsrv/slapd-* ] ; then 
         echo "info:  start configuring Prosody"
@@ -117,18 +117,18 @@ configure_prosody()
         /usr/bin/mysql_secure_installation << EOF
 
 y
-$prosody_MySQL_root_password
-$prosody_MySQL_root_password
+$metronome_MySQL_root_password
+$metronome_MySQL_root_password
 y
 y
 y
 y
 EOF
 
-        mysql -uroot -p$prosody_MySQL_root_password << EOF
-CREATE DATABASE prosody;
-USE prosody;
-GRANT ALL PRIVILEGES ON prosody TO prosody@localhost IDENTIFIED BY '$prosody_MySQL_prosody_password' WITH GRANT OPTION;
+        mysql -uroot -p$metronome_MySQL_root_password << EOF
+CREATE DATABASE metronome;
+USE metronome;
+GRANT ALL PRIVILEGES ON metronome TO metronome@localhost IDENTIFIED BY '$metronome_MySQL_metronome_password' WITH GRANT OPTION;
 FLUSH PRIVILEGES;
 EOF
 
@@ -143,14 +143,14 @@ EOF
         -e "s/dc=[^\']*/$domain_dn/g" \
         -e '/bind_password = /c\        bind_password = '\'$kolab_Directory_Manager_password\'"," \
         -e '/ hostname *=/c\       hostname       = '\'$kolab_hostname\'',' \
-        -e '/^sql/ s/password = "[^"]*"/password= "'$prosody_MySQL_prosody_password'"/' \
-        /etc/prosody/prosody.cfg.lua
+        -e '/^sql/ s/password = "[^"]*"/password= "'$metronome_MySQL_metronome_password'"/' \
+        /etc/metronome/metronome.cfg.lua
 
     sed -r -i \
-        -e "s/dc=[^\"]*/$domain_dn/g" /etc/prosody/kolabgr.lua \
+        -e "s/dc=[^\"]*/$domain_dn/g" /etc/metronome/kolabgr.lua \
         -e '/passwd = /c\    passwd = "'$kolab_Directory_Manager_password'",' \
         -e '/ldapserver = /c\    ldapserver = "'$kolab_hostname'",' \
-        /etc/prosody/kolabgr.lua
+        /etc/metronome/kolabgr.lua
 
 
 }
@@ -215,18 +215,18 @@ EOF
         cat /etc/pki/tls/certs/$(hostname -f).crt /etc/pki/tls/certs/$(hostname -f)-ca.pem > /etc/pki/tls/certs/$(hostname -f).bundle.pem
         cat /etc/pki/tls/certs/$(hostname -f)-ca.pem > /etc/pki/tls/certs/$(hostname -f).ca-chain.pem
         # Set access rights
-        chown -R root:prosody /etc/pki/tls/private
+        chown -R root:metronome /etc/pki/tls/private
         chmod 600 /etc/pki/tls/private/$(hostname -f).key
         chmod 750 /etc/pki/tls/private
         chmod 640 /etc/pki/tls/private/*
         # Add CA to system’s CA bundle
         cat /etc/pki/tls/certs/$(hostname -f)-ca.pem >> /etc/pki/tls/certs/ca-bundle.crt
 
-        # Configuration prosody for SSL
+        # Configuration metronome for SSL
         sed -r -i \
             -e '/certificate =/c\    certificate = "/etc/pki/tls/certs/'$(hostname -f)'.bundle.pem";' \
             -e '/key =/c\    key = "/etc/pki/tls/private/'$(hostname -f)'.key";' \
-            /etc/prosody/prosody.cfg.lua
+            /etc/metronome/metronome.cfg.lua
 
     else 
         echo "error: input of certifacte or private key or ca-sertificate is blank, skipping..."
@@ -238,21 +238,21 @@ EOF
 
 configure_fail2ban()
 {
-    if [ "$(grep -c "prosody" /etc/fail2ban/jail.conf)" == "0" ] ; then
+    if [ "$(grep -c "metronome" /etc/fail2ban/jail.conf)" == "0" ] ; then
         echo "info:  start configuring Fail2ban"
 
-        cat > /etc/fail2ban/filter.d/prosody.conf << EOF
+        cat > /etc/fail2ban/filter.d/metronome.conf << EOF
 [Definition]
 failregex = Failed authentication attempt \(not-authorized\) from IP: <HOST>
 ignoreregex =
 EOF
-        if [ "$(grep -c "prosody" /etc/fail2ban/jail.conf)" == "0" ] ; then
+        if [ "$(grep -c "metronome" /etc/fail2ban/jail.conf)" == "0" ] ; then
             cat >> /etc/fail2ban/jail.conf << EOF
-[prosody]
+[metronome]
 enabled = true
-filter  = prosody
-action  = iptables-multiport[name=prosody,port="5222,5223"]
-logpath = /var/log/prosody/prosody*.log
+filter  = metronome
+action  = iptables-multiport[name=metronome,port="5222,5223"]
+logpath = /var/log/metronome/metronome*.log
 maxretry = 5
 EOF
 
@@ -284,11 +284,11 @@ setup_wizard ()
     get_config /etc/settings.ini
     configure_supervisor
     # Main
-    if [ $main_configure_prosody = "true" ] ; then configure_prosody ; fi
+    if [ $main_configure_metronome = "true" ] ; then configure_metronome ; fi
     if [ $main_configure_ssl = "true" ] ; then configure_ssl ; fi
     if [ $main_configure_fail2ban = "true" ] ; then configure_fail2ban ; fi
     # Print parameters
-    if [ $main_configure_prosody = "true" ] ; then print_passwords ; fi
+    if [ $main_configure_metronome = "true" ] ; then print_passwords ; fi
 }
 
 run ()
@@ -321,7 +321,7 @@ if [ -f /data/etc/settings.ini ]; then get_config /data/etc/settings.ini; fi
 
 case "$1" in
     "run")      run ;;
-    "prosody")  configure_prosody ;;
+    "metronome")  configure_metronome ;;
     "ssl")      configure_ssl ;;
     "fail2ban") configure_fail2ban ;;
     "link")     link_dirs ;;

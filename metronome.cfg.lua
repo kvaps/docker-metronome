@@ -1,10 +1,10 @@
 -- Prosody XMPP Server Configuration
 --
 -- Information on configuring Prosody can be found on our
--- website at http://prosody.im/doc/configure
+-- website at http://metronome.im/doc/configure
 --
 -- Tip: You can check that the syntax of this file is correct
--- when you have finished by running: prosodyctl check config
+-- when you have finished by running: metronomectl check config
 -- If there are any errors, it will let you know what and where
 -- they are, otherwise it will keep quiet.
 --
@@ -17,26 +17,33 @@
 
 -- This is a (by default, empty) list of accounts that are admins
 -- for the server. Note that you must create the accounts separately
--- (see http://prosody.im/doc/creating_accounts for info)
+-- (see http://metronome.im/doc/creating_accounts for info)
 -- Example: admins = { "user1@example.com", "user2@example.net" }
 admins = { }
 
--- Required for init scripts and prosodyctl
-pidfile = "/var/run/prosody/prosody.pid"
+-- Required for init scripts and metronomectl
+pidfile = "/var/run/metronome/metronome.pid"
 
 -- ulimit
-prosody_max_files_soft = 200000
-prosody_max_files_hard = 200000
+metronome_max_files_soft = 200000
+metronome_max_files_hard = 200000
 
--- Enable use of libevent for better performance under high load
--- For more information see: http://prosody.im/doc/libevent
---use_libevent = true
+
+-- HTTP server
+http_ports = { 5280 }
+http_interfaces = { "127.0.0.1", "::1" }
+
+https_ports = { 5281 }
+https_interfaces = { "127.0.0.1", "::1" }
+
+-- Enable IPv6
+use_ipv6 = true
 
 -- This is the list of modules Prosody will load on startup.
 -- It looks for mod_modulename.lua in the plugins folder, so make sure that exists too.
--- Documentation on modules can be found at: http://prosody.im/doc/modules
+-- Documentation on modules can be found at: http://metronome.im/doc/modules
 
-plugin_paths = { "/usr/lib64/prosody/modules", "/usr/src/prosody-modules" }
+plugin_paths = { "/lib/metronome/modules", "/usr/src/metronome-modules" }
 
 modules_enabled = {
 
@@ -55,7 +62,6 @@ modules_enabled = {
         --"vcard"; -- Allow users to set vCards
     
     -- These are commented by default as they have a performance impact
-        --"blocklist"; -- Allow users to block communications with other users
         "compression"; -- Stream compression (requires the lua-zlib package installed)
 
     -- Nice to have
@@ -78,15 +84,14 @@ modules_enabled = {
     -- Other specific functionality
         "posix"; -- POSIX functionality, sends server to background, enables syslog, etc.
         "bidi"; -- Bidirectional Streams for S2S connections
-        --"stream_management"; -- Stream Management support
+        "stream_management"; -- Stream Management support
         --"groups"; -- Shared roster support
         --"announce"; -- Send announcement to all online users
         --"welcome"; -- Welcome users who register accounts
         --"watchregistrations"; -- Alert admins of registrations
         --"motd"; -- Send a message to users when they log in
-        "legacyauth"; -- Legacy authentication. Only used by some old clients and bots. 
+        --"legacyauth"; -- Legacy authentication. Only used by some old clients and bots. 
         "log_auth";
-        "mam";
 }
 
 -- These modules are auto-loaded, but should you want
@@ -126,18 +131,11 @@ external_services = {
 bidi_exclusion_list = { "jabber.org" }
 
 -- BOSH configuration (mod_bosh)
--- bosh_max_inactivity = 30
+bosh_max_inactivity = 30
 consider_bosh_secure = true
 cross_domain_bosh = true
 
--- Message archive configuration
---ignore_presence_priority = true
-default_archive_policy = true -- other options are true or "roster";
-max_archive_query_results = 20;
-muc_log_by_default = true;
-max_history_messages = 1000;
-
--- WebSocket configuration (mod_websocket)
+-- WebSocket configuration (mod_websockets)
 consider_websockets_secure = true
 cross_domain_websockets = true
 
@@ -150,16 +148,21 @@ ignore_presence_priority = true
 -- These are the SSL/TLS-related settings. If you don't want
 -- to use SSL/TLS, you may comment or remove this
 ssl = {
-	key = "/etc/prosody/certs/localhost.key";
-  	certificate = "/etc/prosody/certs/localhost.crt";
-    protocol = "sslv23";
-    ciphers = "ALL"; 
+	key = "/etc/metronome/certs/localhost.key";
+  	certificate = "/etc/metronome/certs/localhost.crt";
+        protocol = "sslv23";
+        ciphers = "ALL"; 
 }
 
 -- Force clients to use encrypted connections? This option will
 -- prevent clients from authenticating unless they are using encryption.
 
 c2s_require_encryption = true
+
+-- Force servers to use encrypted connections? This option will
+-- prevent servers from connecting unless they are using encryption.
+
+s2s_require_encryption = true
 
 -- Allow servers to use an unauthenticated encryption channel
 
@@ -171,6 +174,17 @@ s2s_encryption_exceptions = {
     "gmail.com"
 }
 
+-- Logging configuration
+-- For advanced logging see http://metronome.im/doc/logging
+log = {
+    info = "/var/log/metronome/metronome.log"; -- Change 'info' to 'debug' for verbose logging
+    error = "/var/log/metronome/metronome.err";
+    -- "*syslog"; -- Uncomment this for logging to syslog
+    -- "*console"; -- Log to the console, useful for debugging with daemonize=false
+}
+
+activity_log_dir = "/var/log/metronome/activity_log"
+
 -- Storage configuration
 default_storage = "sql2"
 storage = {
@@ -179,24 +193,13 @@ storage = {
 
 
 -- For the "sql" backend, you can uncomment *one* of the below to configure:
---sql = { driver = "SQLite3", database = "prosody.sqlite" } -- Default. 'database' is the filename.
-sql = { driver = "MySQL", database = "prosody", username = "prosody", password = "password", host = "localhost" }
---sql = { driver = "PostgreSQL", database = "prosody", username = "prosody", password = "secret", host = "localhost" }
-
--- Logging configuration
--- For advanced logging see http://prosody.im/doc/logging
-log = {
-    info = "/var/log/prosody/prosody.log"; -- Change 'info' to 'debug' for verbose logging
-    error = "/var/log/prosody/prosody.err";
-    -- "*syslog"; -- Uncomment this for logging to syslog
-    -- "*console"; -- Log to the console, useful for debugging with daemonize=false
-}
+--sql = { driver = "SQLite3", database = "metronome.sqlite" } -- Default. 'database' is the filename.
+sql = { driver = "MySQL", database = "metronome", username = "metronome", password = "password", host = "localhost" }
+--sql = { driver = "PostgreSQL", database = "metronome", username = "metronome", password = "secret", host = "localhost" }
 
 ----------- Virtual hosts -----------
 -- You need to add a VirtualHost entry for each domain you wish Prosody to serve.
 -- Settings under each VirtualHost entry apply *only* to that host.
-
-VirtualHost "localhost"
 
 VirtualHost "example.org"
     enabled = true
@@ -213,24 +216,24 @@ VirtualHost "example.org"
 
         -- These are commented by default as they have a performance impact
             "mam"; -- Message Archive Management
-            "mam_archive"; -- Message Archive 
-            "blocklist"; -- Support privacy lists
+            "privacy"; -- Support privacy lists
 
         -- Nice to have
             "lastactivity"; -- Logs the user last activity timestamp
-            --"pep"; -- Enables users to publish their mood, activity, playing music and more
+            "pep"; -- Enables users to publish their mood, activity, playing music and more
             "carbons"; -- Allow clients to keep in sync with messages send on other resources
+            "message_carbons"; -- Allow clients to keep in sync with messages send on other resources
             --"register"; -- Allow users to register on this server using a client and change passwords
             --"register_redirect"; -- Redirects users registering to the registration form
-            -- "public_service"; -- Provides some information about the XMPP server
+            "public_service"; -- Provides some information about the XMPP server
             --"log_activity"; -- Activity log, module from https://github.com/jappix/jappix-xmppd-modules
+            "groups"; -- Shared groups
 
         -- Admin interfaces
             --"admin_adhoc"; -- Allows administration via an XMPP client that supports ad-hoc commands
-            "groups";
     }
 
-    groups_file = "/etc/prosody/groups.txt"
+    groups_file = "/etc/metronome/groups.txt"
 
     ldap = {
         hostname      = 'kolab',                    -- LDAP server location
@@ -292,6 +295,34 @@ VirtualHost "example.org"
     mam_stores_cap = 1000
     resources_limit = 10
 
+--[[
+    no_registration_whitelist = true
+    registration_url = "https://jappix.com/"
+    registration_text = "Please register your account on Jappix itself (open Jappix.com in your Web browser). Then you'll be able to use it anywhere you want."
+
+    public_service_vcard = {
+        name = "Jappix XMPP service",
+        url = "https://jappix.com/",
+        foundation_year = "2010",
+        country = "FR",
+        email = "valerian@jappix.com",
+        admin_jid = "valerian@jappix.com",
+        geo = "48.87,2.33",
+        ca = { name = "StartSSL", url = "https://www.startssl.com/" },
+        oob_registration_uri = "https://jappix.com/"
+    }
+--]]
+
+--[[
+VirtualHost "anonymous.jappix.com"
+    enabled = true
+    authentication = "anonymous"
+    allow_anonymous_multiresourcing = true
+    allow_anonymous_s2s = true
+    anonymous_jid_gentoken = "Jappix Anonymous User"
+    anonymous_randomize_for_trusted_addresses = { "127.0.0.1", "::1" }
+--]]
+
 ------ Components ------
 -- You can specify components to add hosts that provide special services,
 -- like multi-user conferences, and transports.
@@ -302,9 +333,8 @@ Component "muc.example.org" "muc"
 
     modules_enabled = {
         "muc_limits";
-        "mam_muc";
         "muc_log";
-        --"muc_log_http";
+        "muc_log_http";
         "pastebin";
     }
 
@@ -313,7 +343,7 @@ Component "muc.example.org" "muc"
 
     muc_log_http_config = {
         url_base = "logs";
-        theme = "prosody";
+        theme = "metronome";
     }
 
     pastebin_url = "https://muc.example.org/paste/"
