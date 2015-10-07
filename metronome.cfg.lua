@@ -87,7 +87,7 @@ modules_enabled = {
         --"welcome"; -- Welcome users who register accounts
         --"watchregistrations"; -- Alert admins of registrations
         --"motd"; -- Send a message to users when they log in
-        --"legacyauth"; -- Legacy authentication. Only used by some old clients and bots. 
+        "legacyauth"; -- Legacy authentication. Only used by some old clients and bots. 
         "log_auth";
 }
 
@@ -147,8 +147,14 @@ ignore_presence_priority = true
 ssl = {
 	key = "/etc/metronome/certs/localhost.key";
   	certificate = "/etc/metronome/certs/localhost.cert";
-        protocol = "sslv23";
-        ciphers = "ALL"; 
+        options = {
+            "no_sslv2",
+            "no_sslv3",
+            "no_ticket",
+            "no_compression",
+            "cipher_server_preference"
+        };
+
 }
 
 -- Force clients to use encrypted connections? This option will

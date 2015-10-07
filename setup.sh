@@ -236,17 +236,6 @@ EOF
     fi
 }
 
-print_passwords()
-{
-    echo "======================================================="
-    echo "Please save your passwords:                            "
-    echo "======================================================="
-    cat /etc/settings.ini | grep password | grep -v Directory_Manager
-    echo
-    echo "            (You can also see it in /etc/settings.ini)"
-    echo "_______________________________________________________"
-}
-
 setup_wizard ()
 {
     vi /etc/settings.ini
@@ -257,12 +246,11 @@ setup_wizard ()
     if [ $main_configure_ssl = "true" ] ; then configure_ssl ; fi
     if [ $main_configure_fail2ban = "true" ] ; then configure_fail2ban ; fi
     # Print parameters
-    if [ $main_configure_metronome = "true" ] ; then print_passwords ; fi
 }
 
 run ()
 {
-     if [ -f /var/lib/metronome/metronome.sqlite ] ; then
+     if [ -f /data/etc/metronome/metronome.cfg.lua ] ; then
      
          echo "info:  Prosody installation detected on /data volume, run relinkink..."
          link_dirs
