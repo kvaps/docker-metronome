@@ -53,9 +53,7 @@ dir=(
     /var/log/metronome
     /etc/ssl
     /etc/pki
-    /var/lib/mysql
     /var/log/messages
-    /var/log/mysqld.log
     /var/log/supervisor
 )
 
@@ -97,8 +95,6 @@ command=/bin/rsyslog-wrapper.sh
 command=/bin/metronome-wrapper.sh 
 [program:kolabgr]
 command=/bin/kolabgr-wrapper.sh
-[program:mysqld]
-command=/bin/mysqld-wrapper.sh 
 ;[program:fail2ban]
 ;command=/bin/fail2ban-wrapper.sh 
 EOF
@@ -108,34 +104,7 @@ EOF
 
 configure_metronome()
 {
-    if [ ! -d /etc/dirsrv/slapd-* ] ; then 
-        echo "info:  start configuring Prosody"
-
-         #MySQL setup
-         service mysqld start
-
-        /usr/bin/mysql_secure_installation << EOF
-
-y
-$metronome_MySQL_root_password
-$metronome_MySQL_root_password
-y
-y
-y
-y
-EOF
-
-        mysql -uroot -p$metronome_MySQL_root_password << EOF
-CREATE DATABASE metronome;
-USE metronome;
-GRANT ALL PRIVILEGES ON metronome TO metronome@localhost IDENTIFIED BY '$metronome_MySQL_metronome_password' WITH GRANT OPTION;
-FLUSH PRIVILEGES;
-EOF
-
-        echo "info:  finished configuring Prosody"
-    else
-        echo "warn: Prosody already configured, skipping..."
-    fi
+    echo "info:  start configuring Prosody"
 
     domain_dn=`echo $(hostname -d) | sed 's/^/dc=/g' | sed 's/[\.]/,dc=/g'`
     sed -r -i \
@@ -143,7 +112,6 @@ EOF
         -e "s/dc=[^\']*/$domain_dn/g" \
         -e '/bind_password = /c\        bind_password = '\'$kolab_Directory_Manager_password\'"," \
         -e '/ hostname *=/c\       hostname       = '\'$kolab_hostname\'',' \
-        -e '/^sql/ s/password = "[^"]*"/password= "'$metronome_MySQL_metronome_password'"/' \
         /etc/metronome/metronome.cfg.lua
 
     sed -r -i \
@@ -152,6 +120,7 @@ EOF
         -e '/ldapserver = /c\    ldapserver = "'$kolab_hostname'",' \
         /etc/metronome/kolabgr.lua
 
+    echo "info:  finished configuring Prosody"
 
 }
 
@@ -293,7 +262,7 @@ setup_wizard ()
 
 run ()
 {
-     if [ -d /data/var/lib/mysql/mysql ] ; then
+     if [ -f /var/lib/metronome/metronome.sqlite ] ; then
      
          echo "info:  Prosody installation detected on /data volume, run relinkink..."
          link_dirs

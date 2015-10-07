@@ -1,15 +1,16 @@
 FROM centos:centos6
 MAINTAINER kvaps <kvapss@gmail.com>
-ENV REFRESHED_AT 2015-09-17
+ENV REFRESHED_AT 2015-10-07
 
 RUN yum -y update
 RUN yum -y install epel-release 
 
 # Install additional soft
-RUN yum -y install mysql-server supervisor fail2ban dhclient lua-ldap mercurial tar rsyslog dhclient
+RUN yum -y install supervisor fail2ban dhclient lua-ldap mercurial tar rsyslog dhclient
 
 # Install build-essentials and lua-modules
-RUN yum -y install gcc lua-devel openssl-devel libidn-devel lua-expat lua-socket lua-filesystem lua-sec lua-dbi
+RUN yum -y install gcc lua-devel openssl-devel libidn-devel lua-expat lua-socket lua-filesystem lua-sec lua-dbi lua-event
+
 
 ENV LUACPATH="/usr/lib64/lua/5.1"
 ENV LIBDIR="-L/usr/lib64"
@@ -43,8 +44,6 @@ RUN chown metronome:metronome /var/run/metronome/
 
 #Install Metronome-modules
 ADD modules/* /lib/metronome/modules/
-
-RUN yum -y install lua-event
 
 # Add config and setup script, run it
 ADD wrappers/* /bin/

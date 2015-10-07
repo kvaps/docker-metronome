@@ -31,10 +31,10 @@ metronome_max_files_hard = 200000
 
 -- HTTP server
 http_ports = { 5280 }
-http_interfaces = { "127.0.0.1", "::1" }
+http_interfaces = { "0.0.0.0", "::" }
 
 https_ports = { 5281 }
-https_interfaces = { "127.0.0.1", "::1" }
+https_interfaces = { "0.0.0.0", "::" }
 
 -- Enable IPv6
 use_ipv6 = true
@@ -186,8 +186,8 @@ activity_log_dir = "/var/log/metronome/activity_log"
 storage = "sql";
 
 -- For the "sql" backend, you can uncomment *one* of the below to configure:
---sql = { driver = "SQLite3", database = "metronome.sqlite" } -- Default. 'database' is the filename.
-sql = { driver = "MySQL", database = "metronome", username = "metronome", password = "password", host = "localhost" }
+sql = { driver = "SQLite3", database = "metronome.sqlite" } -- Default. 'database' is the filename.
+--sql = { driver = "MySQL", database = "metronome", username = "metronome", password = "password", host = "localhost" }
 --sql = { driver = "PostgreSQL", database = "metronome", username = "metronome", password = "secret", host = "localhost" }
 
 ----------- Virtual hosts -----------
