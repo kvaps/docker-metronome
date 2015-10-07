@@ -43,8 +43,6 @@ use_ipv6 = true
 -- It looks for mod_modulename.lua in the plugins folder, so make sure that exists too.
 -- Documentation on modules can be found at: http://metronome.im/doc/modules
 
-plugin_paths = { "/lib/metronome/modules", "/usr/src/metronome-modules" }
-
 modules_enabled = {
 
     -- Generally required
@@ -53,7 +51,6 @@ modules_enabled = {
         "tls"; -- Add support for secure TLS on c2s/s2s connections
         "dialback"; -- s2s dialback support
         "disco"; -- Service discovery
-        "discoitems"; -- Service discovery items
         "extdisco"; -- External Service Discovery
 
 
@@ -149,7 +146,7 @@ ignore_presence_priority = true
 -- to use SSL/TLS, you may comment or remove this
 ssl = {
 	key = "/etc/metronome/certs/localhost.key";
-  	certificate = "/etc/metronome/certs/localhost.crt";
+  	certificate = "/etc/metronome/certs/localhost.cert";
         protocol = "sslv23";
         ciphers = "ALL"; 
 }
@@ -186,11 +183,7 @@ log = {
 activity_log_dir = "/var/log/metronome/activity_log"
 
 -- Storage configuration
-default_storage = "sql2"
-storage = {
-     vcard = "ldap";
-}
-
+storage = "sql";
 
 -- For the "sql" backend, you can uncomment *one* of the below to configure:
 --sql = { driver = "SQLite3", database = "metronome.sqlite" } -- Default. 'database' is the filename.
@@ -203,8 +196,11 @@ sql = { driver = "MySQL", database = "metronome", username = "metronome", passwo
 
 VirtualHost "example.org"
     enabled = true
-    authentication = "internal_hashed"
     authentication = 'ldap2' -- Indicate that we want to use LDAP for authentication
+    default_storage = "sql"
+    storage = {
+        vcard = "ldap";
+    }
 
     modules_enabled = {
         -- Generally required
@@ -221,7 +217,6 @@ VirtualHost "example.org"
         -- Nice to have
             "lastactivity"; -- Logs the user last activity timestamp
             "pep"; -- Enables users to publish their mood, activity, playing music and more
-            "carbons"; -- Allow clients to keep in sync with messages send on other resources
             "message_carbons"; -- Allow clients to keep in sync with messages send on other resources
             --"register"; -- Allow users to register on this server using a client and change passwords
             --"register_redirect"; -- Redirects users registering to the registration form

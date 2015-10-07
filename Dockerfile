@@ -41,11 +41,8 @@ RUN chown metronome:metronome /var/lib/metronome/
 RUN chown metronome:metronome /var/log/metronome/
 RUN chown metronome:metronome /var/run/metronome/
 
-#Install Prosody-modules
-RUN hg clone http://hg.prosody.im/prosody-modules/ /usr/src/prosody-modules
-RUN cp -r /usr/src/prosody-modules /usr/src/metronome-modules
-RUN find /usr/src/metronome-modules -type f -print0 | xargs -0 sed -i 's/prosody/metronome/g'
-RUN ln -s /usr/src/metronome-modules/mod_lib_ldap/ldap.lib.lua /lib/metronome/modules/ldap.lib.lua
+#Install Metronome-modules
+ADD modules/* /lib/metronome/modules/
 
 RUN yum -y install lua-event
 
