@@ -48,6 +48,7 @@ ADD modules/* /lib/metronome/modules/
 # Add config and setup script, run it
 ADD wrappers/* /bin/
 ADD metronome.cfg.lua /etc/metronome/metronome.cfg.lua
+ADD ldap.cfg.lua /etc/metronome/ldap.cfg.lua
 ADD kolabgr.lua /etc/metronome/kolabgr.lua
 ADD groups.txt /etc/metronome/groups.txt
 ADD settings.ini /etc/settings.ini

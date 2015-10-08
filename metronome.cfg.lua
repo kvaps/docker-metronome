@@ -235,68 +235,11 @@ VirtualHost "example.org"
     }
 
     groups_file = "/etc/metronome/groups.txt"
+    Include 'ldap.cfg.lua'
 
-    ldap = {
-        hostname      = 'kolab',                    -- LDAP server location
-        bind_dn       = 'cn=Directory Manager', -- Bind DN for LDAP authentication (optional if anonymous bind is supported)
-        bind_password = 'password',                      -- Bind password (optional if anonymous bind is supported)
-    
-        user = {
-          basedn        = 'ou=People,dc=example,dc=org',                  -- The base DN where user records can be found
-          filter        = '(objectClass=mailrecipient)', -- Filter expression to find user records under basedn
-          usernamefield = 'uid',                                         -- The field that contains the user's ID (this will be the username portion of the JID)
-          namefield     = 'cn',                                          -- The field that contains the user's full name (this will be the alias found in the roster)
-        },
-    
-        groups = {
-          basedn      = 'ou=Groups,dc=example,dc=org', -- The base DN where group records can be found
-          memberfield = 'uniqueMember',                   -- The field that contains user ID records for this group (each member must have a corresponding entry under the user basedn with the same value in usernamefield)
-          namefield   = 'cn',                          -- The field that contains the group's name (used for matching groups in LDAP to group definitions below)
-    
-    --      {
-    --        name  = 'Everyone', -- The group name that will be seen in users' rosters
-    --        cn    = 'Everyone', -- This field's key *must* match ldap.groups.namefield! It's the name of the LDAP group this definition represents
-    --        admin = false,      -- (Optional) A boolean flag that indicates whether members of this group should be considered administrators.
-    --      },
-          {
-            name  = 'IT',
-            cn    = 'IT',
-            admin = true,
-          },
-        },
-    
-        vcard_format = {
-          displayname = 'cn', -- Consult the vCard configuration section in the README
-          nickname    = 'displayName',
-    --      given       = 'givenName',
-    --      family      = 'sn',
-          fn          = 'displayName',
-          email       = {
-            internet = { 
-              userid = 'mail',
-            }
-          },
-    --      tel         = 'telephoneNumber',
-          tel = { 
-            work = { 
-              number = 'telephoneNumber',
-            }
-          }, 
-    --      org         = 'o',
-          title       = 'title',
-          bday        = 'birthDay',
-          photo       = {
-            type   = 'image/jpeg',
-            binval = 'jpegPhoto',
-          }
-        },
-    }
-
-    
     mam_stores_cap = 1000
     resources_limit = 10
 
---[[
     no_registration_whitelist = true
     registration_url = "https://jappix.com/"
     registration_text = "Please register your account on Jappix itself (open Jappix.com in your Web browser). Then you'll be able to use it anywhere you want."
@@ -312,9 +255,7 @@ VirtualHost "example.org"
         ca = { name = "StartSSL", url = "https://www.startssl.com/" },
         oob_registration_uri = "https://jappix.com/"
     }
---]]
 
---[[
 VirtualHost "anonymous.jappix.com"
     enabled = true
     authentication = "anonymous"
@@ -322,7 +263,6 @@ VirtualHost "anonymous.jappix.com"
     allow_anonymous_s2s = true
     anonymous_jid_gentoken = "Jappix Anonymous User"
     anonymous_randomize_for_trusted_addresses = { "127.0.0.1", "::1" }
---]]
 
 ------ Components ------
 -- You can specify components to add hosts that provide special services,
@@ -383,8 +323,8 @@ Component "stats.example.org" "http"
     server_status_show_hosts = { "example.org", "anonymous.example.org" }
     server_status_show_comps = { "muc.example.org", "proxy.example.org", "pubsub.example.org", "vjud.example.org" }
 
---[[
 
+--[[
 ---Set up an API service
 -- Important: uses modules from https://github.com/jappix/jappix-xmppd-modules
 Component "api.example.org" "http"
