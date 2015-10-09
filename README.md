@@ -1,7 +1,7 @@
-Metronome 0.10 Jabber/XMPP server in a Docker container
+Metronome Jabber/XMPP server in a Docker container
 =====================================================
 
-This is Metronome 0.10 Jabber/XMPP server, configured to use with Kolab Groupware in a docker.
+This is Metronome Jabber/XMPP server, configured to use with Kolab Groupware in a docker.
 Installation is supports automatic configuration **metronome**, **ssl**, and **fail2ban** and communicate with **Kolab** using ldap.
 
 Run
