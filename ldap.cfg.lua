@@ -4,6 +4,7 @@ ldap = {
     bind_password = 'password',                      -- Bind password (optional if anonymous bind is supported)
     
     kolabgr = {
+      domain          = "example.org",          --Domain name, used as JID postfix in case if LDAP uids used
       show_all_groups = true,                   --All users see all groups
       not_show_groups = { 'All', 'Everyone' },  --Exceptions these groups
     },
