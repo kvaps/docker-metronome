@@ -188,9 +188,6 @@ log = {
 
 activity_log_dir = "/var/log/metronome/activity_log"
 
--- Storage configuration
-storage = "sql";
-
 -- For the "sql" backend, you can uncomment *one* of the below to configure:
 sql = { driver = "SQLite3", database = "metronome.sqlite" } -- Default. 'database' is the filename.
 --sql = { driver = "MySQL", database = "metronome", username = "metronome", password = "password", host = "localhost" }
@@ -202,11 +199,9 @@ sql = { driver = "SQLite3", database = "metronome.sqlite" } -- Default. 'databas
 
 VirtualHost "example.org"
     enabled = true
-    authentication = 'ldap2' -- Indicate that we want to use LDAP for authentication
     default_storage = "sql"
-    storage = {
-        vcard = "ldap";
-    }
+    authentication = 'ldap2' -- Indicate that we want to use LDAP for authentication
+    storage = { vcard = "ldap"; }
 
     modules_enabled = {
         -- Generally required
@@ -236,10 +231,10 @@ VirtualHost "example.org"
 
     groups_file = "/etc/metronome/groups.txt"
 
+
     ---------------------------------------------
     --Include 'ldap.cfg.lua'
     ---------------------------------------------
-
     ldap = {
         hostname      = 'localhost',                    -- LDAP server location
         bind_dn       = 'cn=Directory Manager', -- Bind DN for LDAP authentication (optional if anonymous bind is supported)
@@ -308,7 +303,7 @@ VirtualHost "example.org"
 
     mam_stores_cap = 1000
     resources_limit = 10
-
+--[[
     no_registration_whitelist = true
     registration_url = "https://jappix.com/"
     registration_text = "Please register your account on Jappix itself (open Jappix.com in your Web browser). Then you'll be able to use it anywhere you want."
@@ -332,7 +327,7 @@ VirtualHost "anonymous.jappix.com"
     allow_anonymous_s2s = true
     anonymous_jid_gentoken = "Jappix Anonymous User"
     anonymous_randomize_for_trusted_addresses = { "127.0.0.1", "::1" }
-
+--]]
 ------ Components ------
 -- You can specify components to add hosts that provide special services,
 -- like multi-user conferences, and transports.

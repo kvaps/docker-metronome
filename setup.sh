@@ -104,23 +104,35 @@ EOF
 
 configure_metronome()
 {
-    echo "info:  start configuring Prosody"
+    echo "info:  start configuring Metronome"
 
     domain_dn=`echo $(hostname -d) | sed 's/^/dc=/g' | sed 's/[\.]/,dc=/g'`
     sed -r -i \
         -e "s/example\.org/$(hostname -d)/g" \
-        -e "s/dc=[^\']*/$domain_dn/g" \
-        -e '/bind_password = /c\        bind_password = '\'$kolab_Directory_Manager_password\'"," \
+        -e '/bind_dn /c\        bind_dn = '\'$kolab_bind_username\'"," \
+        -e '/bind_password /c\        bind_password = '\'$kolab_bind_password\'"," \
         -e '/ hostname *=/c\       hostname       = '\'$kolab_hostname\'',' \
+        -e "s/dc=[^\']*/$domain_dn/g" \
+        /etc/metronome/metronome.cfg.lua \
+        /etc/metronome/ldap.cfg.lua
+
+    if [ $metronome_kolab_authentification = "false" ] ; then
+        sed -r -i -e '/^[^--]*authentication.*ldap2/s/^/--/' \
+                  -e '/^[^--]*storage.*vcard = "ldap"/s/^/--/' \
         /etc/metronome/metronome.cfg.lua
+    fi
 
-    sed -r -i \
-        -e "s/dc=[^\"]*/$domain_dn/g" /etc/metronome/kolabgr.lua \
-        -e '/passwd = /c\    passwd = "'$kolab_Directory_Manager_password'",' \
-        -e '/ldapserver = /c\    ldapserver = "'$kolab_hostname'",' \
-        /etc/metronome/kolabgr.lua
+    if [ $metronome_kolab_intergration = "false" ] ; then
+        sed -i --follow-symlinks '/^[^;]*kolabgr/s/^/;/' /etc/supervisord.conf
+    fi
 
-    echo "info:  finished configuring Prosody"
+    if [ $metronome_all_groups_is_public = "false" ] ; then
+    sed -i -e '/show_all_groups = /c\        show_all_groups = false,' \
+        /etc/metronome/metronome.cfg.lua \
+        /etc/metronome/ldap.cfg.lua
+    fi
+
+    echo "info:  finished configuring Metronome"
 
 }
 
@@ -252,7 +264,7 @@ run ()
 {
      if [ -f /data/etc/metronome/metronome.cfg.lua ] ; then
      
-         echo "info:  Prosody installation detected on /data volume, run relinkink..."
+         echo "info:  Metronome installation detected on /data volume, run relinkink..."
          link_dirs
          
          echo "info:  Starting services"
@@ -261,7 +273,7 @@ run ()
      else
      
           while true; do
-             read -p "warn:  Prosody data not detected on /data volume, this is first installation(yes/no)? " yn
+             read -p "warn:  Metronome data not detected on /data volume, this is first installation(yes/no)? " yn
              case $yn in
                  [Yy]* ) move_dirs; link_dirs; setup_wizard; break;;
                  [Nn]* ) echo "info:  Installation canceled"; exit;;
