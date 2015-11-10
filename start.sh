@@ -14,6 +14,26 @@ usage ()
      exit
 }
 
+generate_dn()
+{
+    echo $(hostname -d) | sed 's/^/dc=/g' | sed 's/[\.]/,dc=/g'
+}
+
+chk_var () {
+   var=$(sh -c "echo $(echo \$$1)")
+   [ -z "$var" ] && export "$1"="$2"
+}
+
+load_defaults()
+{
+    chk_var  TZ                    "utc"
+    chk_var  FAIL2BAN              true
+    chk_var  KOLAB_DN              `generate_dn`
+    chk_var  BIND_USER             'uid=kolab-service,ou=Special Users,dc=example,dc=org'
+    chk_var  BIND_PASS             "password"
+    chk_var  GROUPS_MODE           "public"
+}
+
 get_config()
 {
     while IFS="=" read var val
@@ -81,7 +101,6 @@ configure_metronome()
 {
     echo "info:  start configuring Metronome"
 
-    domain_dn=`echo $(hostname -d) | sed 's/^/dc=/g' | sed 's/[\.]/,dc=/g'`
     sed -r -i \
         -e "s/example\.org/$(hostname -d)/g" \
         -e '/bind_dn /c\        bind_dn = '\'$kolab_bind_username\'"," \
