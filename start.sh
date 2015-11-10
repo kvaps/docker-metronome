@@ -28,9 +28,12 @@ load_defaults()
 {
     chk_var  TZ                    "utc"
     chk_var  FAIL2BAN              true
+    chk_var  KOLAB_AUTH            true
+    chk_var  KOLAB_GROUPS          true
+    chk_var  KOLAB_VCARD           true
     chk_var  KOLAB_DN              `generate_dn`
-    chk_var  BIND_USER             'uid=kolab-service,ou=Special Users,dc=example,dc=org'
-    chk_var  BIND_PASS             "password"
+    chk_var  KOLAB_BIND_USER       'uid=kolab-service,ou=Special Users,dc=example,dc=org'
+    chk_var  KOLAB_BIND_PASS       "password"
     chk_var  GROUPS_MODE           "public"
 }
 
@@ -103,30 +106,53 @@ configure_metronome()
 
     sed -r -i \
         -e "s/example\.org/$(hostname -d)/g" \
-        -e '/bind_dn /c\        bind_dn = '\'$kolab_bind_username\'"," \
-        -e '/bind_password /c\        bind_password = '\'$kolab_bind_password\'"," \
-        -e '/ hostname *=/c\       hostname       = '\'$kolab_hostname\'',' \
-        -e "s/dc=[^\']*/$domain_dn/g" \
+        /etc/metronome/metronome.cfg.lua \
+        /etc/metronome/ldap.cfg.lua
+    
+    echo "info:  finished configuring Metronome"
+}
+
+configure_kolab()
+{
+    echo "info:  start configuring Metronome for Kolab"
+
+    sed -r -i \
+        -e '/bind_dn /c\        bind_dn = '\'$KOLAB_BIND_USER\'"," \
+        -e '/bind_password /c\        bind_password = '\'$KOLAB_BIND_PASS\'"," \
+        -e '/ hostname *=/c\       hostname       = '\'$KOLAB_HOST\'',' \
+        -e "s/dc=[^\']*/$KOLAB_DN/g" \
         /etc/metronome/metronome.cfg.lua \
         /etc/metronome/ldap.cfg.lua
 
-    if [ $metronome_kolab_authentification = "false" ] ; then
-        sed -r -i -e '/^[^--]*authentication.*ldap2/s/^/--/' \
-                  -e '/^[^--]*storage.*vcard = "ldap"/s/^/--/' \
-        /etc/metronome/metronome.cfg.lua
+    if [ -z $KOLAB_AUTH ] ; then
+        sed -i -e '/^--*authentication.*ldap2/s/^/--/' /etc/metronome/metronome.cfg.lua
+    else
+        sed -i -e '/^[^--]*authentication.*ldap2/s/^/--/' /etc/metronome/metronome.cfg.lua
     fi
 
-    if [ $metronome_kolab_intergration = "false" ] ; then
+    if [ -z $KOLAB_VCARD ] ; then
+        sed -i -e '/^--*storage.*vcard = "ldap"/s/^/--/' /etc/metronome/metronome.cfg.lua
+    else
+        sed -i -e '/^[^--]*storage.*vcard = "ldap"/s/^/--/' /etc/metronome/metronome.cfg.lua
+    fi
+
+    if [ -z $KOLAB_GROUPS ] ; then
+        sed -i --follow-symlinks '/^;.*kolabgr/s/^;//' /etc/supervisord.conf
+    else
         sed -i --follow-symlinks '/^[^;]*kolabgr/s/^/;/' /etc/supervisord.conf
     fi
-
-    if [ $metronome_all_groups_is_public = "false" ] ; then
-    sed -i -e '/show_all_groups = /c\        show_all_groups = false,' \
+    
+    if [ $KOLAB_GROUPS_MODE = "public" ] ; then
+        sed -i -e '/show_all_groups = /c\        show_all_groups = true,' \
+        /etc/metronome/metronome.cfg.lua \
+        /etc/metronome/ldap.cfg.lua
+    elif [ $KOLAB_GROUPS_MODE = "private" ] ; then
+        sed -i -e '/show_all_groups = /c\        show_all_groups = false,' \
         /etc/metronome/metronome.cfg.lua \
         /etc/metronome/ldap.cfg.lua
     fi
 
-    echo "info:  finished configuring Metronome"
+    echo "info:  finished configuring Metronome for Kolab"
 
 }
 
