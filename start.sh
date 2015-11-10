@@ -78,7 +78,7 @@ configure_metronome()
 
 configure_kolab()
 {
-    if   [ ! -z $KOLAB_HOST ] ; then
+    if   [ ! -z "$KOLAB_HOST" ] ; then
         echo "info:  start configuring Kolab integration"
 
         sed -r -i \
@@ -91,38 +91,38 @@ configure_kolab()
     else
         echo "info:  disabling Kolab integration"
 
-        KOLAB_AUTH = false
-        KOLAB_VCARD = false
-        KOLAB_GROUPS = false
+        export KOLAB_AUTH=false
+        export KOLAB_VCARD=false
+        export KOLAB_GROUPS=false
     fi
 
-    if   [ $KOLAB_AUTH = true  ] ; then
+    if   [ "$KOLAB_AUTH" = true  ] ; then
         sed -i -e '/^--*authentication.*ldap2/s/^/--/' /etc/metronome/metronome.cfg.lua
-    elif [ $KOLAB_AUTH = false  ] ; then
+    elif [ "$KOLAB_AUTH" = false  ] ; then
         sed -i -e '/^[^--]*authentication.*ldap2/s/^/--/' /etc/metronome/metronome.cfg.lua
     fi
 
-    if   [ $KOLAB_VCARD = true ] ; then
+    if   [ "$KOLAB_VCARD" = true ] ; then
         sed -i -e '/^--*storage.*vcard = "ldap"/s/^/--/' /etc/metronome/metronome.cfg.lua
-    elif [ $KOLAB_VCARD = false ] ; then
+    elif [ "$KOLAB_VCARD" = false ] ; then
         sed -i -e '/^[^--]*storage.*vcard = "ldap"/s/^/--/' /etc/metronome/metronome.cfg.lua
     fi
 
-    if   [ $KOLAB_GROUPS = true ] ; then
+    if   [ "$KOLAB_GROUPS" = true ] ; then
 
         # Uncomment kolabgr
         sed -i --follow-symlinks '/^;.*kolabgr/s/^;//' /etc/supervisord.conf
-        if   [ $KOLAB_GROUPS_MODE = "public" ] ; then
+        if   [ "$KOLAB_GROUPS_MODE" = "public" ] ; then
             sed -i -e '/show_all_groups = /c\        show_all_groups = true,' \
             /etc/metronome/metronome.cfg.lua \
             /etc/metronome/ldap.cfg.lua
-        elif [ $KOLAB_GROUPS_MODE = "private" ] ; then
+        elif [ "$KOLAB_GROUPS_MODE" = "private" ] ; then
             sed -i -e '/show_all_groups = /c\        show_all_groups = false,' \
             /etc/metronome/metronome.cfg.lua \
             /etc/metronome/ldap.cfg.lua
         fi
 
-    elif [ $KOLAB_GROUPS = false ] ; then
+    elif [ "$KOLAB_GROUPS" = false ] ; then
         # Comment kolabgr
         sed -i --follow-symlinks '/^[^;]*kolabgr/s/^/;/' /etc/supervisord.conf
     fi
@@ -133,7 +133,7 @@ configure_kolab()
 
 configure_ssl()
 {
-    if [ -f /etc/pki/tls/certs/$(hostname -f).crt ] ; then
+    if [ ! -f /etc/pki/tls/certs/$(hostname -f).crt ] ; then
         echo "info:  start configuring SSL"
 
         # Generate key and certificate
@@ -170,13 +170,13 @@ configure_ssl()
 
 configure_fail2ban()
 {
-    if   [ $FAIL2BAN = true  ] ; then
+    if   [ "$FAIL2BAN" = true  ] ; then
 
         echo "info:  start configuring Fail2ban"
         # Uncoment fail2ban
         sed -i --follow-symlinks '/^;.*fail2ban/s/^;//' /etc/supervisord.conf
 
-    elif [ $FAIL2BAN = false  ] ; then
+    elif [ "$FAIL2BAN" = false  ] ; then
 
         echo "info:  disabling Fail2Ban"
         # Coment fail2ban
@@ -189,11 +189,11 @@ configure_fail2ban()
 [ ! -f /data/etc/metronome/metronome.cfg.lua ] && export FIRST_SETUP=true #Check for first setup
 
 
-[ $FIRST_SETUP = true  ]     && move_dirs
+[ "$FIRST_SETUP" = true  ]   && move_dirs
                                 link_dirs
                                 set_timezone
 
-if [ $FIRST_SETUP = true  ] ; then
+if [ "$FIRST_SETUP" = true ] ; then
                                 configure_metronome
                                 configure_ssl
 fi
