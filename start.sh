@@ -1,18 +1,4 @@
 #!/bin/bash
-usage ()
-{
-     echo
-     echo "Usage:    ./setup.sh [ARGUMENT]"
-     echo
-     echo "Arguments:"
-     echo "    run                   - Auto start all services or install wizard in case of initial setup"
-     echo "    link                  - Create symlinks default folders to /data"
-     echo "    metronome               - Configure metronome from config"
-     echo "    ssl                   - Configure SSL using your certs"
-     echo "    fail2ban              - Configure Fail2ban"
-     echo
-     exit
-}
 
 generate_dn()
 {
@@ -92,7 +78,7 @@ configure_metronome()
 configure_kolab()
 {
     if   [ ! -z $KOLAB_HOST ] ; then
-        echo "info:  start configuring Metronome for Kolab"
+        echo "info:  start configuring Kolab integration"
 
         sed -r -i \
             -e '/bind_dn /c\        bind_dn = '\'$KOLAB_BIND_USER\'"," \
@@ -123,6 +109,7 @@ configure_kolab()
 
     if   [ $KOLAB_GROUPS = true ] ; then
 
+        # Uncomment kolabgr
         sed -i --follow-symlinks '/^;.*kolabgr/s/^;//' /etc/supervisord.conf
         if   [ $KOLAB_GROUPS_MODE = "public" ] ; then
             sed -i -e '/show_all_groups = /c\        show_all_groups = true,' \
@@ -135,12 +122,11 @@ configure_kolab()
         fi
 
     elif [ $KOLAB_GROUPS = false ] ; then
+        # Comment kolabgr
         sed -i --follow-symlinks '/^[^;]*kolabgr/s/^/;/' /etc/supervisord.conf
     fi
 
-    if   [ ! -z $KOLAB_HOST ] ; then
-        echo "info:  finished configuring Metronome for Kolab"
-    fi
+    echo "info:  finished configuring Kolab integration"
 
 }
 
@@ -175,72 +161,44 @@ configure_ssl()
             -e '/key =/c\    key = "/etc/pki/tls/private/'$(hostname -f)'.key";' \
             /etc/metronome/metronome.cfg.lua
 
-    else 
-        echo "error: input of certifacte or private key or ca-sertificate is blank, skipping..."
+        echo "info:  finished configuring SSL"
+    else
+        echo "warn:  SSL already configured, skipping..."
     fi
-
-    rm -rf /tmp/update_ssl*
-    echo "info:  finished configuring SSL"
 }
 
 configure_fail2ban()
 {
-    if [ "$(grep -c "metronome" /etc/fail2ban/jail.conf)" == "0" ] ; then
-        echo "info:  start configuring Fail2ban"
+    if   [ $FAIL2BAN = true  ] ; then
 
+        echo "info:  start configuring Fail2ban"
         # Uncoment fail2ban
         sed -i --follow-symlinks '/^;.*fail2ban/s/^;//' /etc/supervisord.conf
 
-        echo "info:  finished configuring Fail2ban"
-    else
-        echo "warn:  Fail2ban already configured, skipping..."
+    elif [ $FAIL2BAN = false  ] ; then
+
+        echo "info:  disabling Fail2Ban"
+        # Coment fail2ban
+        sed -i --follow-symlinks '/^[^;]*fail2ban/s/^/;/' /etc/supervisord.conf
     fi
+    
+    echo "info:  finished configuring Fail2ban"
 }
 
-setup_wizard ()
-{
-    vi /etc/settings.ini
-    get_config /etc/settings.ini
-    # Main
-    if [ $main_configure_metronome = "true" ] ; then configure_metronome ; fi
-    if [ $main_configure_ssl = "true" ] ; then configure_ssl ; fi
-    if [ $main_configure_fail2ban = "true" ] ; then configure_fail2ban ; fi
-    # Print parameters
-}
+[ ! -f /data/etc/metronome/metronome.cfg.lua ] && export FIRST_SETUP=true #Check for first setup
 
-run ()
-{
-     if [ -f /data/etc/metronome/metronome.cfg.lua ] ; then
-     
-         echo "info:  Metronome installation detected on /data volume, run relinkink..."
-         link_dirs
+
+[ $FIRST_SETUP = true  ]     && move_dirs
+                                link_dirs
+                                set_timezone
+
+if [ $FIRST_SETUP = true  ] ; then
+                                configure_metronome
+                                configure_ssl
+fi
+                                configure_fail2ban
+                                configure_kolab
+
          
-         echo "info:  Starting services"
-         /usr/bin/supervisord
-     
-     else
-     
-          while true; do
-             read -p "warn:  Metronome data not detected on /data volume, this is first installation(yes/no)? " yn
-             case $yn in
-                 [Yy]* ) move_dirs; link_dirs; setup_wizard; break;;
-                 [Nn]* ) echo "info:  Installation canceled"; exit;;
-                 * ) echo "Please answer yes or no.";;
-             esac
-         done
-     
-     fi
-}
-
-set_timezone
-
-if [ -f /data/etc/settings.ini ]; then get_config /data/etc/settings.ini; fi
-
-case "$1" in
-    "run")      run ;;
-    "metronome")  configure_metronome ;;
-    "ssl")      configure_ssl ;;
-    "fail2ban") configure_fail2ban ;;
-    "link")     link_dirs ;;
-    *)          usage ;;
-esac
+echo "info:  Starting services"
+/usr/bin/supervisord
