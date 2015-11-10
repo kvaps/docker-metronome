@@ -1,6 +1,6 @@
 FROM centos:centos6
 MAINTAINER kvaps <kvapss@gmail.com>
-ENV REFRESHED_AT 2015-10-07
+ENV REFRESHED_AT 2015-11-10
 
 RUN yum -y update
 RUN yum -y install epel-release 
@@ -55,7 +55,7 @@ ADD configs/supervisord.conf /etc/supervisord.conf
 ADD configs/fail2ban/jail.conf /etc/fail2ban/jail.conf
 ADD configs/fail2ban/filter.d/* /etc/fail2ban/filter.d/
 ADD start.sh /bin/start.sh
-ENTRYPOINT ["/bin/start.sh", "run"]
+ENTRYPOINT ["/bin/start.sh"]
  
 WORKDIR /root
 
