@@ -34,29 +34,7 @@ load_defaults()
     chk_var  KOLAB_DN              `generate_dn`
     chk_var  KOLAB_BIND_USER       'uid=kolab-service,ou=Special Users,dc=example,dc=org'
     chk_var  KOLAB_BIND_PASS       "password"
-    chk_var  KOLAB_GROUPS_MODE           "public"
-}
-
-get_config()
-{
-    while IFS="=" read var val
-    do
-        if [[ $var == \[*] ]]
-        then
-            section=`echo "$var" | tr -d "[] "`
-        elif [[ $val ]]
-        then
-            if [[ $val == "random" ]]
-            then
-		random_pwd="$(cat /dev/urandom | env LC_CTYPE=C tr -dc a-zA-Z0-9 | head -c 16; echo)"	# gen pass
-                eval $section"_"$var=$random_pwd
-		sed -i --follow-symlinks "/\(^"$var"=\).*/ s//\1"$random_pwd"/ " $1	#save generated pass to settings.ini
-            else
-                eval $section"_"$var="$val"
-            fi
-        fi
-    done < $1
-    chmod 600 /etc/settings.ini
+    chk_var  KOLAB_GROUPS_MODE     "public"
 }
 
 set_timezone()
@@ -79,7 +57,6 @@ dir=(
     /var/log/messages
     /var/log/supervisor
 )
-
 
 move_dirs()
 {
@@ -170,58 +147,16 @@ configure_kolab()
 configure_ssl()
 {
     if [ -f /etc/pki/tls/certs/$(hostname -f).crt ] ; then
-        echo "warn:  SSL already configured, but that's nothing wrong, run again..."
-    fi
-    echo "info:  start configuring SSL"
-    cat > /tmp/update_ssl_key_message.txt << EOF
+        echo "info:  start configuring SSL"
 
-
-# Please paste here your SSL ___PRIVATE KEY___. Lines starting
-# with '#' will be ignored, and an empty message aborts
-# updating SSL-certificates procedure.
-EOF
-    cat > /tmp/update_ssl_crt_message.txt << EOF
-
-
-# Please paste here your SSL ___CERTIFICATE___. Lines starting
-# with '#' will be ignored, and an empty message aborts
-# updating SSL-certificates procedure.
-EOF
-
-    cat > /tmp/update_ssl_ca_message.txt << EOF
-
-
-# Please paste here your SSL ___CA-CERTIFICATE___. Lines starting
-# with '#' will be ignored, and an empty message aborts
-# updating SSL-certificates procedure.
-EOF
-
-    if [ -f /etc/pki/tls/private/$(hostname -f).key ] ; then
-	cat /etc/pki/tls/private/$(hostname -f).key /tmp/update_ssl_key_message.txt > /tmp/update_ssl_$(hostname -f).key
-    else
-	cat /tmp/update_ssl_key_message.txt > /tmp/update_ssl_$(hostname -f).key
-    fi
-
-    if [ -f /etc/pki/tls/certs/$(hostname -f).crt ] ; then
-	cat /etc/pki/tls/certs/$(hostname -f).crt /tmp/update_ssl_crt_message.txt > /tmp/update_ssl_$(hostname -f).crt
-    else
-	cat /tmp/update_ssl_crt_message.txt > /tmp/update_ssl_$(hostname -f).crt
-    fi
-    if [ -f /etc/pki/tls/certs/$(hostname -f)-ca.pem ] ; then
-	cat /etc/pki/tls/certs/$(hostname -f)-ca.pem /tmp/update_ssl_ca_message.txt > /tmp/update_ssl_$(hostname -f)-ca.pem
-    else
-	cat /tmp/update_ssl_ca_message.txt > /tmp/update_ssl_$(hostname -f)-ca.pem
-    fi
-
-    vi /tmp/update_ssl_$(hostname -f).key
-    vi /tmp/update_ssl_$(hostname -f).crt
-    vi /tmp/update_ssl_$(hostname -f)-ca.pem
-
-    if [ "$(grep -c -v -E "^#|^$" /tmp/update_ssl_$(hostname -f).key)" != "0" ] || [ "$(grep -c -v -E "^#|^$" /tmp/update_ssl_$(hostname -f).crt)" != "0" ] || [ "$(grep -c -v -E "^#|^$" /tmp/update_ssl_$(hostname -f)-ca.pem)" != "0" ] ; then
-        grep -v -E "^#|^$" /tmp/update_ssl_$(hostname -f).key > /etc/pki/tls/private/$(hostname -f).key
-        grep -v -E "^#|^$" /tmp/update_ssl_$(hostname -f).crt > /etc/pki/tls/certs/$(hostname -f).crt
-        grep -v -E "^#|^$" /tmp/update_ssl_$(hostname -f)-ca.pem > /etc/pki/tls/certs/$(hostname -f)-ca.pem
-
+        # Generate key and certificate
+        openssl req -new -newkey rsa:4096 -days 3650 -nodes -x509 \
+                    -subj "/CN=$(hostname -f)" \
+                    -keyout /etc/pki/tls/private/$(hostname -f).key \
+                    -out /etc/pki/tls/certs/$(hostname -f).crt
+    
+        touch /etc/pki/tls/certs/$(hostname -f)-ca.pem
+    
         # Create certificate bundles
         cat /etc/pki/tls/certs/$(hostname -f).crt /etc/pki/tls/private/$(hostname -f).key /etc/pki/tls/certs/$(hostname -f)-ca.pem > /etc/pki/tls/private/$(hostname -f).bundle.pem
         cat /etc/pki/tls/certs/$(hostname -f).crt /etc/pki/tls/certs/$(hostname -f)-ca.pem > /etc/pki/tls/certs/$(hostname -f).bundle.pem

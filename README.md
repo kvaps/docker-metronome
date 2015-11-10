@@ -60,7 +60,7 @@ cat certs/${METRONOME_HOSTNAME}.crt certs/${METRONOME_HOSTNAME}-ca.pem > certs/$
 cat certs/${METRONOME_HOSTNAME}-ca.pem > certs/${METRONOME_HOSTNAME}.ca-chain.pem
 
 # Set access rights
-chown -R root:mail private
+chown -R root:metronome private
 chmod 750 private
 chmod 640 private/*
 
