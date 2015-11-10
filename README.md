@@ -7,18 +7,19 @@ Installation is supports automatic configuration **metronome**, **ssl**, and **f
 Run
 ---
 
+### Run command
+
 ```bash
 docker run \
     --name metronome \
     -h xmpp.example.org \
-    --link=kolab \
     -v /opt/metronome:/data:rw \
     -p 5000:5000 \
     -p 5222:5222 \
     -p 5269:5269 \
     -p 5280:5280 \
     -p 5281:5281 \
-    --env TZ=Europe/Moscow \
+    -e TZ=Europe/Moscow \
     --cap-add=NET_ADMIN \
     -ti \
     kvaps/metronome
@@ -32,8 +33,18 @@ You can also more integrate metronome to your system, simply replace `-v` option
     -v /var/log/metronome:/data/var/log:rw \
 ```
 
-If it is the first run, you will see the settings page, make your changes and save it, installation will continue...
-*(You need to have the base knowledge of the [vi editor](http://google.com/#q=vi+editor))*
+### Kolab integration
+
+To enable Kolab integration, use the following options, for example:
+
+```
+    --link kolab \
+    -e KOLAB_HOST=kolab \
+    -e KOLAB_BIND_PASS='MgcII4E4Q7xd4FBh' \
+    -e KOLAB_AUTH=true \
+    -e KOLAB_VCARD=true \
+    -e KOLAB_GROUPS=true \
+```
 
 Configuration
 -------------
@@ -162,7 +173,7 @@ vi /etc/metronome-docker/example.org
 DOCKER_HOSTNAME=xmpp.example.org
 DOCKER_NAME="metronome-$(echo $DOCKER_HOSTNAME | cut -d. -f 2-)"
 DOCKER_VOLUME="/opt/metronome-$(echo $DOCKER_HOSTNAME | cut -d. -f 2-)"
-DOCKER_OPTIONS='--env TZ=Europe/Moscow --cap-add=NET_ADMIN --link kolab-$(echo $DOCKER_HOSTNAME | cut -d. -f 2-) -p 5280:5280 -p 5281:5281'
+DOCKER_OPTIONS='--env TZ=Europe/Moscow --cap-add=NET_ADMIN --link kolab-$(echo $DOCKER_HOSTNAME | cut -d. -f 2-) -p 5280:5280 -p 5281:5281 -e KOLAB_AUTH=true -e KOLAB_VCARD=true -e KOLAB_GROUPS=true -e KOLAB_BIND_PASS=MgcII4E4Q7xd4FBh'
  
 EXT_INTERFACE=eth2
 #EXT_ADDRESS='dhclient D2:84:9D:CA:F3:BC'
