@@ -76,6 +76,7 @@ Below is the complete list of available options that can be used to customize yo
 
 #### Basic options
 
+  - **TZ**: Sets timezone. Defaults to `utc`.
   - **FAIL2BAN**: Enables Fail2Ban. Defaults to `true`.
 
 #### Kolab Groupware integration
@@ -84,9 +85,12 @@ This settings enables Kolab Groupware integration
 
   - **KOLAB_HOST**: Resolvable name or linked containername of Kolab Groupware server. Example to `kolab`.
   - **KOLAB_DN**: Bind DN of your Kolab server. Defaults getting from hostname, like to `dc=example,dc=org`.
-  - **BIND_USER**: Bind user path. Defaults to `uid=kolab-service,ou=Special Users,dc=example,dc=org`. *(Domain will be replaced by `KOLAB_DN` parameter)*
-  - **BIND_PASS**: Password for bind user. Defaults to `password`.
-  - **GROUPS_MODE**: Set all groups as `public` or `private`. Defaults to `public`
+  - **KOLAV_BIND_USER**: Bind user path. Defaults to `uid=kolab-service,ou=Special Users,dc=example,dc=org`. *(Domain will be replaced by `KOLAB_DN` parameter)*
+  - **KOLAB_BIND_PASS**: Password for bind user. Defaults to `password`.
+  - **KOLAB_AUTH**: Enables Kolab authentification. Defaults to `true`.
+  - **KOLAB_VCARD**: Enables Kolab vcard integration. Defaults to `true`.
+  - **KOLAB_GROUPS**: Enables Kolab groups integration. Defaults to `true`.
+  - **KOLAB_GROUPS_MODE**: Set all groups as `public` or `private`. Defaults to `public`
 
 
 Systemd unit
