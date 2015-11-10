@@ -7,18 +7,19 @@ Installation is supports automatic configuration **metronome**, **ssl**, and **f
 Run
 ---
 
+### Run command
+
 ```bash
 docker run \
     --name metronome \
     -h xmpp.example.org \
-    --link=kolab \
     -v /opt/metronome:/data:rw \
     -p 5000:5000 \
     -p 5222:5222 \
     -p 5269:5269 \
     -p 5280:5280 \
     -p 5281:5281 \
-    --env TZ=Europe/Moscow \
+    -e TZ=Europe/Moscow \
     --cap-add=NET_ADMIN \
     -ti \
     kvaps/metronome
@@ -32,8 +33,76 @@ You can also more integrate metronome to your system, simply replace `-v` option
     -v /var/log/metronome:/data/var/log:rw \
 ```
 
-If it is the first run, you will see the settings page, make your changes and save it, installation will continue...
-*(You need to have the base knowledge of the [vi editor](http://google.com/#q=vi+editor))*
+### Kolab integration
+
+To enable Kolab integration, use the following options, for example:
+
+```
+    --link kolab \
+    -e KOLAB_HOST=kolab \
+    -e KOLAB_BIND_PASS='MgcII4E4Q7xd4FBh' \
+    -e KOLAB_AUTH=true \
+    -e KOLAB_VCARD=true \
+    -e KOLAB_GROUPS=true \
+```
+
+Configuration
+-------------
+
+
+### SSL-certificates
+
+```bash
+
+# Go to tls folder of your container
+cd /opt/metronome/etc/pki/tls
+
+# Set the variable with your metronome hostname
+METRONOME_HOSTNAME='mail.example.org'
+
+# Write your keys
+vim private/${METRONOME_HOSTNAME}.key
+vim certs/${METRONOME_HOSTNAME}.crt
+vim certs/${METRONOME_HOSTNAME}-ca.pem
+
+# Create certificate bundles
+cat certs/${METRONOME_HOSTNAME}.crt private/${METRONOME_HOSTNAME}.key certs/${METRONOME_HOSTNAME}-ca.pem > private/${METRONOME_HOSTNAME}.bundle.pem
+cat certs/${METRONOME_HOSTNAME}.crt certs/${METRONOME_HOSTNAME}-ca.pem > certs/${METRONOME_HOSTNAME}.bundle.pem
+cat certs/${METRONOME_HOSTNAME}-ca.pem > certs/${METRONOME_HOSTNAME}.ca-chain.pem
+
+# Set access rights
+chown -R root:metronome private
+chmod 750 private
+chmod 640 private/*
+
+# Add CA to system’s CA bundle
+cat certs/${METRONOME_HOSTNAME}-ca.pem >> certs/ca-bundle.crt
+```
+
+### Available Configuration Parameters
+
+*Please refer the docker run command options for the `--env-file` flag where you can specify all required environment variables in a single file. This will save you from writing a potentially long docker run command. Alternatively you can use docker-compose.*
+
+Below is the complete list of available options that can be used to customize your kolab installation.
+
+#### Basic options
+
+  - **TZ**: Sets timezone. Defaults to `utc`.
+  - **FAIL2BAN**: Enables Fail2Ban. Defaults to `true`.
+
+#### Kolab Groupware integration
+
+This settings enables Kolab Groupware integration
+
+  - **KOLAB_HOST**: Resolvable name or linked containername of Kolab Groupware server. Example to `kolab`.
+  - **KOLAB_DN**: Bind DN of your Kolab server. Defaults getting from hostname, like to `dc=example,dc=org`.
+  - **KOLAV_BIND_USER**: Bind user path. Defaults to `uid=kolab-service,ou=Special Users,dc=example,dc=org`. *(Domain will be replaced by `KOLAB_DN` parameter)*
+  - **KOLAB_BIND_PASS**: Password for bind user. Defaults to `password`.
+  - **KOLAB_AUTH**: Enables Kolab authentification. Defaults to `true`.
+  - **KOLAB_VCARD**: Enables Kolab vcard integration. Defaults to `true`.
+  - **KOLAB_GROUPS**: Enables Kolab groups integration. Defaults to `true`.
+  - **KOLAB_GROUPS_MODE**: Set all groups as `public` or `private`. Defaults to `public`
+  - **KOLAB_GROUPS_TIMEOUT**: Sets how often to run a check for Kolab groups changes. Defaults to `15m`.
 
 Systemd unit
 ------------
@@ -104,7 +173,7 @@ vi /etc/metronome-docker/example.org
 DOCKER_HOSTNAME=xmpp.example.org
 DOCKER_NAME="metronome-$(echo $DOCKER_HOSTNAME | cut -d. -f 2-)"
 DOCKER_VOLUME="/opt/metronome-$(echo $DOCKER_HOSTNAME | cut -d. -f 2-)"
-DOCKER_OPTIONS='--env TZ=Europe/Moscow --cap-add=NET_ADMIN --link kolab-$(echo $DOCKER_HOSTNAME | cut -d. -f 2-) -p 5280:5280 -p 5281:5281'
+DOCKER_OPTIONS='--env TZ=Europe/Moscow --cap-add=NET_ADMIN --link kolab-$(echo $DOCKER_HOSTNAME | cut -d. -f 2-) -p 5280:5280 -p 5281:5281 -e KOLAB_AUTH=true -e KOLAB_VCARD=true -e KOLAB_GROUPS=true -e KOLAB_BIND_PASS=MgcII4E4Q7xd4FBh'
  
 EXT_INTERFACE=eth2
 #EXT_ADDRESS='dhclient D2:84:9D:CA:F3:BC'

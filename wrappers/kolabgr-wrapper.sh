@@ -3,7 +3,7 @@
 kolabgr ()
 {
     lua /etc/metronome/kolabgr.lua > /etc/metronome/groups.txt
-    sleep 15m 
+    sleep $KOLAB_GROUPS_TIMEOUT
     kolabgr
 }
 
