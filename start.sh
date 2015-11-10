@@ -21,6 +21,7 @@ load_defaults()
     chk_var  KOLAB_BIND_USER       'uid=kolab-service,ou=Special Users,dc=example,dc=org'
     chk_var  KOLAB_BIND_PASS       "password"
     chk_var  KOLAB_GROUPS_MODE     "public"
+    chk_var  KOLAB_GROUPS_TIMEOUT  "15m"
 }
 
 set_timezone()
