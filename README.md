@@ -35,8 +35,8 @@ You can also more integrate metronome to your system, simply replace `-v` option
 If it is the first run, you will see the settings page, make your changes and save it, installation will continue...
 *(You need to have the base knowledge of the [vi editor](http://google.com/#q=vi+editor))*
 
-Systemd unit
-------------
+Configuration
+-------------
 
 
 ### SSL-certificates
