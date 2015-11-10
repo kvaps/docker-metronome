@@ -38,6 +38,60 @@ If it is the first run, you will see the settings page, make your changes and sa
 Systemd unit
 ------------
 
+
+### SSL-certificates
+
+```bash
+
+# Go to tls folder of your container
+cd /opt/metronome/etc/pki/tls
+
+# Set the variable with your metronome hostname
+METRONOME_HOSTNAME='mail.example.org'
+
+# Write your keys
+vim private/${METRONOME_HOSTNAME}.key
+vim certs/${METRONOME_HOSTNAME}.crt
+vim certs/${METRONOME_HOSTNAME}-ca.pem
+
+# Create certificate bundles
+cat certs/${METRONOME_HOSTNAME}.crt private/${METRONOME_HOSTNAME}.key certs/${METRONOME_HOSTNAME}-ca.pem > private/${METRONOME_HOSTNAME}.bundle.pem
+cat certs/${METRONOME_HOSTNAME}.crt certs/${METRONOME_HOSTNAME}-ca.pem > certs/${METRONOME_HOSTNAME}.bundle.pem
+cat certs/${METRONOME_HOSTNAME}-ca.pem > certs/${METRONOME_HOSTNAME}.ca-chain.pem
+
+# Set access rights
+chown -R root:mail private
+chmod 750 private
+chmod 640 private/*
+
+# Add CA to system’s CA bundle
+cat certs/${METRONOME_HOSTNAME}-ca.pem >> certs/ca-bundle.crt
+```
+
+### Available Configuration Parameters
+
+*Please refer the docker run command options for the `--env-file` flag where you can specify all required environment variables in a single file. This will save you from writing a potentially long docker run command. Alternatively you can use docker-compose.*
+
+Below is the complete list of available options that can be used to customize your kolab installation.
+
+#### Basic options
+
+  - **FAIL2BAN**: Enables Fail2Ban. Defaults to `true`.
+
+#### Kolab Groupware integration
+
+This settings enables Kolab Groupware integration
+
+  - **KOLAB_HOST**: Resolvable name or linked containername of Kolab Groupware server. Example to `kolab`.
+  - **KOLAB_DN**: Bind DN of your Kolab server. Defaults getting from hostname, like to `dc=example,dc=org`.
+  - **BIND_USER**: Bind user path. Defaults to `uid=kolab-service,ou=Special Users,dc=example,dc=org`. *(Domain will be replaced by `KOLAB_DN` parameter)*
+  - **BIND_PASS**: Password for bind user. Defaults to `password`.
+  - **GROUPS_MODE**: Set all groups as `public` or `private`. Defaults to `public`
+
+
+Systemd unit
+------------
+
 You can create a unit for systemd, which would run it as a service and use when startup
 
 ```bash
