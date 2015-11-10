@@ -52,8 +52,8 @@ ADD ldap.cfg.lua /etc/metronome/ldap.cfg.lua
 ADD kolabgr.lua /etc/metronome/kolabgr.lua
 ADD groups.txt /etc/metronome/groups.txt
 ADD settings.ini /etc/settings.ini
-ADD setup.sh /bin/setup.sh
-ENTRYPOINT ["/bin/setup.sh", "run"]
+ADD start.sh /bin/start.sh
+ENTRYPOINT ["/bin/start.sh", "run"]
  
 WORKDIR /root
 
