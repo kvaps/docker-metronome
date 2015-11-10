@@ -77,27 +77,6 @@ link_dirs()
     echo "info:  finished linking default lib and log folders to /data volume"
 }
 
-configure_supervisor()
-{
-    echo "info:  start configuring Supervisor"
-
-    cat > /etc/supervisord.conf << EOF
-[supervisord]
-nodaemon=true
-
-[program:rsyslog]
-command=/bin/rsyslog-wrapper.sh 
-[program:metronome]
-command=/bin/metronome-wrapper.sh 
-[program:kolabgr]
-command=/bin/kolabgr-wrapper.sh
-;[program:fail2ban]
-;command=/bin/fail2ban-wrapper.sh 
-EOF
-
-    echo "info:  finished configuring Supervisor"
-}
-
 configure_metronome()
 {
     echo "info:  start configuring Metronome"
@@ -218,23 +197,6 @@ configure_fail2ban()
     if [ "$(grep -c "metronome" /etc/fail2ban/jail.conf)" == "0" ] ; then
         echo "info:  start configuring Fail2ban"
 
-        cat > /etc/fail2ban/filter.d/metronome.conf << EOF
-[Definition]
-failregex = Failed authentication attempt \(not-authorized\) from IP: <HOST>
-ignoreregex =
-EOF
-        if [ "$(grep -c "metronome" /etc/fail2ban/jail.conf)" == "0" ] ; then
-            cat >> /etc/fail2ban/jail.conf << EOF
-[metronome]
-enabled = true
-filter  = metronome
-action  = iptables-multiport[name=metronome,port="5222,5223"]
-logpath = /var/log/metronome/metronome*.log
-maxretry = 5
-EOF
-
-        fi
-
         # Uncoment fail2ban
         sed -i --follow-symlinks '/^;.*fail2ban/s/^;//' /etc/supervisord.conf
 
@@ -248,7 +210,6 @@ setup_wizard ()
 {
     vi /etc/settings.ini
     get_config /etc/settings.ini
-    configure_supervisor
     # Main
     if [ $main_configure_metronome = "true" ] ; then configure_metronome ; fi
     if [ $main_configure_ssl = "true" ] ; then configure_ssl ; fi

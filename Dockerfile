@@ -47,11 +47,13 @@ ADD modules/* /lib/metronome/modules/
 
 # Add config and setup script, run it
 ADD wrappers/* /bin/
-ADD metronome.cfg.lua /etc/metronome/metronome.cfg.lua
-ADD ldap.cfg.lua /etc/metronome/ldap.cfg.lua
+ADD configs/metronome/metronome.cfg.lua /etc/metronome/metronome.cfg.lua
+ADD configs/metronome/ldap.cfg.lua /etc/metronome/ldap.cfg.lua
 ADD kolabgr.lua /etc/metronome/kolabgr.lua
-ADD groups.txt /etc/metronome/groups.txt
-ADD settings.ini /etc/settings.ini
+ADD configs/metronome/groups.txt /etc/metronome/groups.txt
+ADD configs/supervisord.conf /etc/supervisord.conf
+ADD configs/fail2ban/jail.conf /etc/fail2ban/jail.conf
+ADD configs/fail2ban/filter.d/* /etc/fail2ban/filter.d/
 ADD start.sh /bin/start.sh
 ENTRYPOINT ["/bin/start.sh", "run"]
  
