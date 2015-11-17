@@ -124,6 +124,18 @@ configure_kolab()
             /etc/metronome/metronome.cfg.lua \
             /etc/metronome/ldap.cfg.lua
         fi
+        if   [ ! -z "$KOLAB_GROUPS_IGNORE" ] ; then
+            print_groups_ignore() {
+                for i in ${KOLAB_GROUPS_IGNORE//,/ }; do echo -n "'$i', "; done | sed 's/,[^,]*$//'
+            }
+           sed -i -e "/not_show_groups = /c\        not_show_groups = { `print_groups_ignore` }," \
+            /etc/metronome/metronome.cfg.lua \
+            /etc/metronome/ldap.cfg.lua
+        else
+            sed -i -e "/not_show_groups = /c\        not_show_groups = nil," \
+            /etc/metronome/metronome.cfg.lua \
+            /etc/metronome/ldap.cfg.lua
+        fi
 
     elif [ "$KOLAB_GROUPS" = false ] ; then
         # Comment kolabgr

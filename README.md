@@ -103,6 +103,7 @@ This settings enables Kolab Groupware integration
   - **KOLAB_GROUPS**: Enables Kolab groups integration. Defaults to `true`.
   - **KOLAB_GROUPS_MODE**: Set all groups as `public` or `private`. Defaults to `public`
   - **KOLAB_GROUPS_TIMEOUT**: Sets how often to run a check for Kolab groups changes. Defaults to `15m`.
+  - **KOLAB_GROUPS_IGNORE**: Comma separated groups, which not need be added to the group list.  Example to `All,Everyone`.
 
 Systemd unit
 ------------
