@@ -32,7 +32,6 @@ set_timezone()
 }
 
 dir=(
-    /etc/settings.ini
     /etc/fail2ban
     /etc/my.cnf
     /etc/metronome
@@ -186,12 +185,19 @@ configure_fail2ban()
     echo "info:  finished configuring Fail2ban"
 }
 
+start_services()
+{
+             echo "info:  Starting services"
+                      /usr/bin/supervisord
+} 
+
 [ ! -f /data/etc/metronome/metronome.cfg.lua ] && export FIRST_SETUP=true #Check for first setup
 
 
+                                load_defaults
+                                set_timezone
 [ "$FIRST_SETUP" = true  ]   && move_dirs
                                 link_dirs
-                                set_timezone
 
 if [ "$FIRST_SETUP" = true ] ; then
                                 configure_metronome
@@ -199,7 +205,4 @@ if [ "$FIRST_SETUP" = true ] ; then
 fi
                                 configure_fail2ban
                                 configure_kolab
-
-         
-echo "info:  Starting services"
-/usr/bin/supervisord
+                                start_services
