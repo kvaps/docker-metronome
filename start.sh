@@ -81,9 +81,13 @@ configure_kolab()
         echo "info:  start configuring Kolab integration"
 
         sed -r -i \
-            -e '/bind_dn /c\        bind_dn = '\'$KOLAB_BIND_USER\'"," \
-            -e '/bind_password /c\        bind_password = '\'$KOLAB_BIND_PASS\'"," \
-            -e '/ hostname *=/c\       hostname       = '\'$KOLAB_HOST\'',' \
+            -e "/bind_dn /c\        bind_dn = \'$KOLAB_BIND_USER\'," \
+            -e "/bind_password /c\        bind_password = \'$KOLAB_BIND_PASS\'," \
+            -e "/ hostname *=/c\       hostname       = \'$KOLAB_HOST\'," \
+            /etc/metronome/metronome.cfg.lua \
+            /etc/metronome/ldap.cfg.lua
+
+        sed -r -i \
             -e "s/dc=[^\']*/$KOLAB_DN/g" \
             /etc/metronome/metronome.cfg.lua \
             /etc/metronome/ldap.cfg.lua
