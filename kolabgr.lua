@@ -53,10 +53,6 @@ function print_group(val)
         end
 end
 
-local function isempty(s)
-    return s == nil or s == ''
-end
-
 if ldap.kolabgr.not_show_groups then
     for group, val in pairs (groups) do -- Take groups
         for id, igngroup in pairs (ldap.kolabgr.not_show_groups) do -- Remove ignoring groups
