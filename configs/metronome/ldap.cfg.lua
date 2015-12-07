@@ -6,7 +6,7 @@ ldap = {
     kolabgr = {
       domain          = "example.org",          --Domain name, used as JID postfix in case if LDAP uids used
       show_all_groups = true,                   --All users see all groups
-      not_show_groups = nil,                    --Exceptions these groups
+      not_show_groups = {'All', 'Everybody'}    --Exceptions these groups
     },
 
     user = {
