@@ -91,22 +91,19 @@ configure_kolab()
             -e "s/dc=[^\']*/$KOLAB_DN/g" \
             /etc/metronome/metronome.cfg.lua \
             /etc/metronome/ldap.cfg.lua
-    else
-        echo "info:  disabling Kolab integration"
-
-        export KOLAB_AUTH=false
-        export KOLAB_VCARD=false
-        export KOLAB_GROUPS=false
     fi
+    [ "KOLAB_AUTH" = false ] && export KOLAB_AUTH=false
+    [ "KOLAB_VCARD" = false ] && export KOLAB_VCARD=false
+    [ "KOLAB_GROUPS" = true ] && export KOLAB_GROUPS=false
 
     if   [ "$KOLAB_AUTH" = true  ] ; then
-        sed -i -e '/^--*authentication.*ldap2/s/^/--/' /etc/metronome/metronome.cfg.lua
+        sed -i -e '/^--.*authentication.*ldap2/s/^--//' /etc/metronome/metronome.cfg.lua
     elif [ "$KOLAB_AUTH" = false  ] ; then
         sed -i -e '/^[^--]*authentication.*ldap2/s/^/--/' /etc/metronome/metronome.cfg.lua
     fi
 
     if   [ "$KOLAB_VCARD" = true ] ; then
-        sed -i -e '/^--*storage.*vcard = "ldap"/s/^/--/' /etc/metronome/metronome.cfg.lua
+        sed -i -e '/^--.*storage.*vcard = "ldap"/s/^--//' /etc/metronome/metronome.cfg.lua
     elif [ "$KOLAB_VCARD" = false ] ; then
         sed -i -e '/^[^--]*storage.*vcard = "ldap"/s/^/--/' /etc/metronome/metronome.cfg.lua
     fi
