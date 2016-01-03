@@ -14,12 +14,13 @@ load_defaults()
 {
     chk_var  TZ                    "utc"
     chk_var  FAIL2BAN              true
+    chk_var  KOLAB_HOST            "kolab"
     chk_var  KOLAB_AUTH            true
     chk_var  KOLAB_GROUPS          true
     chk_var  KOLAB_VCARD           true
     chk_var  KOLAB_DN              `generate_dn`
     chk_var  KOLAB_BIND_USER       'uid=kolab-service,ou=Special Users,dc=example,dc=org'
-    chk_var  KOLAB_BIND_PASS       "password"
+    chk_var  KOLAB_BIND_PASS       ${KOLAB_ENV_LDAP_KOLAB_PASS:-password}
     chk_var  KOLAB_GROUPS_MODE     "public"
     chk_var  KOLAB_GROUPS_TIMEOUT  "15m"
 }
@@ -77,7 +78,7 @@ configure_metronome()
 
 configure_kolab()
 {
-    if   [ ! -z "$KOLAB_HOST" ] ; then
+    if   [ "$KOLAB_AUTH" = true  ] || [ "$KOLAB_VCARD" = true ] || [ "$KOLAB_GROUPS" = true ] ; then
         echo "info:  start configuring Kolab integration"
 
         sed -r -i \

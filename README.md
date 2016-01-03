@@ -94,10 +94,10 @@ Below is the complete list of available options that can be used to customize yo
 
 This settings enables Kolab Groupware integration
 
-  - **KOLAB_HOST**: Resolvable name or linked containername of Kolab Groupware server. Example to `kolab`.
+  - **KOLAB_HOST**: Resolvable name or linked containername of Kolab Groupware server. Deafults to `kolab`.
   - **KOLAB_DN**: Bind DN of your Kolab server. Defaults getting from hostname, like to `dc=example,dc=org`.
   - **KOLAV_BIND_USER**: Bind user path. Defaults to `uid=kolab-service,ou=Special Users,dc=example,dc=org`. *(Domain will be replaced by `KOLAB_DN` parameter)*
-  - **KOLAB_BIND_PASS**: Password for bind user. Defaults to `password`.
+  - **KOLAB_BIND_PASS**: Password for bind user. Defaults to `$KOLAB_ENV_LDAP_KOLAB_PASS` if exist, or `password`.
   - **KOLAB_AUTH**: Enables Kolab authentification. Defaults to `true`.
   - **KOLAB_VCARD**: Enables Kolab vcard integration. Defaults to `true`.
   - **KOLAB_GROUPS**: Enables Kolab groups integration. Defaults to `true`.
