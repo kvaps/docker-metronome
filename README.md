@@ -1,11 +1,11 @@
-Metronome Jabber/XMPP server in a Docker container
-=====================================================
+Metronome Jabber/XMPP server in a Docker
+========================================
 
 This is Metronome Jabber/XMPP server, configured to use with Kolab Groupware in a docker.
 Installation is supports automatic configuration **metronome**, **ssl**, and **fail2ban** and communicate with **Kolab** using ldap.
 
-Run
----
+Quick start
+-----------
 
 ### Run command
 
@@ -37,13 +37,42 @@ You can also more integrate metronome to your system, simply replace `-v` option
 
 To enable Kolab integration, use the following options, for example:
 
-```
+```bash
     --link kolab \
     -e KOLAB_HOST=kolab \
-    -e KOLAB_BIND_PASS='MgcII4E4Q7xd4FBh' \
+    -e KOLAB_BIND_PASS=<password> \
     -e KOLAB_AUTH=true \
     -e KOLAB_VCARD=true \
     -e KOLAB_GROUPS=true \
+```
+
+Docker-compose
+--------------
+You can use the docker-compose for this image is really simplify your life:
+
+```yaml
+metronome:
+  image: kvaps/metronome
+  restart: always
+  hostname: xmpp
+  domainname: example.org
+  volumes:
+    - /etc/localtime:/etc/localtime:ro
+    - ./metronome:/data:rw
+  links:
+    - kolab
+  environment:
+    - TZ=Europe/Moscow
+    - KOLAB_HOST=kolab
+    - KOLAB_BIND_PASS=<password>
+  cap_add:
+    - NET_ADMIN
+  ports:
+    - 5000:5000
+    - 5222:5222
+    - 5269:5269
+    - 5280:5280
+    - 5281:5281
 ```
 
 Configuration
@@ -105,87 +134,9 @@ This settings enables Kolab Groupware integration
   - **KOLAB_GROUPS_TIMEOUT**: Sets how often to run a check for Kolab groups changes. Defaults to `15m`.
   - **KOLAB_GROUPS_IGNORE**: Comma separated groups, which not need be added to the group list.  Example to `All,Everyone`.
 
-Systemd unit
-------------
-
-You can create a unit for systemd, which would run it as a service and use when startup
-
-```bash
-vi /etc/systemd/system/metronome.service
-```
-
-```ini
-[Unit]
-Description=Metronome Jabber/XMPP Server
-After=docker.service
-Requires=docker.service
-
-[Service]
-Restart=always
-ExecStart=/usr/bin/docker start -a metronome
-ExecStop=/usr/bin/docker stop metronome
-
-[Install]
-WantedBy=multi-user.target
-```
-
-Now you can activate and start the container:
-```bash
-systemctl enable metronome
-systemctl start metronome
-```
-
 Multi-instances
 ---------------
 
-I use [pipework](https://github.com/jpetazzo/pipework) script for passthrough external ethernet cards into docker container
+I use [pipework](https://hub.docker.com/r/dreamcat4/pipework/) image for passthrough external ethernet cards into docker container.
 
-I write such systemd-unit:
-```bash
-vi /etc/systemd/system/metronome@.service
-```
-```ini
-[Unit]
-Description=Metronome Jabber/XMPP Server for %I
-After=docker.service
-Requires=docker.service
-
-[Service]
-EnvironmentFile=/etc/metronome-docker/%i
-Restart=always
-
-ExecStart=/bin/bash -c '/usr/bin/docker run --name ${DOCKER_NAME} -h ${DOCKER_HOSTNAME} -v ${DOCKER_VOLUME}:/data:rw ${DOCKER_OPTIONS} kvaps/metronome'
-ExecStartPost=/bin/bash -c ' \
-        pipework ${EXT_INTERFACE} -i eth1 ${DOCKER_NAME} ${EXT_ADDRESS}@${EXT_GATEWAY}; \
-        docker exec ${DOCKER_NAME} bash -c "${INT_ROUTE}"; \
-        docker exec ${DOCKER_NAME} bash -c "if ! [ \"${DNS_SERVER}\" = \"\" ] ; then echo nameserver ${DNS_SERVER} > /etc/resolv.conf ; fi" '
-
-ExecStop=/bin/bash -c 'docker stop -t 2 ${DOCKER_NAME} ; docker rm -f ${DOCKER_NAME}'
-
-[Install]
-WantedBy=multi-user.target
-```
-
-And this config for each instance:
-```bash
-vi /etc/metronome-docker/example.org
-```
-```bash
-DOCKER_HOSTNAME=xmpp.example.org
-DOCKER_NAME="metronome-$(echo $DOCKER_HOSTNAME | cut -d. -f 2-)"
-DOCKER_VOLUME="/opt/metronome-$(echo $DOCKER_HOSTNAME | cut -d. -f 2-)"
-DOCKER_OPTIONS='--env TZ=Europe/Moscow --cap-add=NET_ADMIN --link kolab-$(echo $DOCKER_HOSTNAME | cut -d. -f 2-) -p 5280:5280 -p 5281:5281 -e KOLAB_AUTH=true -e KOLAB_VCARD=true -e KOLAB_GROUPS=true -e KOLAB_BIND_PASS=MgcII4E4Q7xd4FBh'
- 
-EXT_INTERFACE=eth2
-#EXT_ADDRESS='dhclient D2:84:9D:CA:F3:BC'
-EXT_ADDRESS='10.10.10.123/24'
-EXT_GATEWAY='10.10.10.1'
-DNS_SERVER='8.8.8.8'
- 
-INT_ROUTE='ip route add 192.168.1.0/24 via 172.17.42.1 dev eth0'
-```
-Just simple use:
-```bash
-systemctl enable metronome@example.org
-systemctl start metronome@example.org
-```
+See [examples](https://github.com/dreamcat4/docker-images/blob/master/pipework/3.%20Examples.md), that's realy simple!
