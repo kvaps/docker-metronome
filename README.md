@@ -13,6 +13,8 @@ Quick start
 docker run \
     --name metronome \
     -h xmpp.example.org \
+    -v /etc/localtime:/etc/localtime:ro \
+    -v /lib/modules:/lib/modules:ro \
     -v /opt/metronome:/data:rw \
     -p 5000:5000 \
     -p 5222:5222 \
